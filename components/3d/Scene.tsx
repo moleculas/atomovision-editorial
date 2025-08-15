@@ -35,7 +35,7 @@ function ArchillectLoader({ onLoaded }: { onLoaded: (files: string[]) => void })
   return null
 }
 
-function ArchillectSphere() {
+function ArchillectSphere({ onFirstTextureLoaded }: { onFirstTextureLoaded: (loaded: boolean) => void }) {
   const meshRef = useRef<THREE.Mesh>(null)
   const [currentTexture, setCurrentTexture] = useState<THREE.Texture | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -44,6 +44,7 @@ function ArchillectSphere() {
   const [displayedText, setDisplayedText] = useState('')
   const [isTransitioning, setIsTransitioning] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const hasNotifiedFirstLoad = useRef(false)  // Para notificar solo una vez
   const { gl } = useThree()
   const { startTransition } = useNavigationStore()
   
@@ -144,6 +145,12 @@ function ArchillectSphere() {
         texture.wrapT = THREE.RepeatWrapping
         setCurrentTexture(texture)
         setIsLoading(false)
+        
+        // Notificar que la primera textura se ha cargado
+        if (!hasNotifiedFirstLoad.current) {
+          hasNotifiedFirstLoad.current = true
+          onFirstTextureLoaded(true)
+        }
       },
       undefined,
       (error) => {
@@ -155,7 +162,7 @@ function ArchillectSphere() {
         }, 1000)
       }
     )
-  }, [isLoading, currentTexture, currentIndex, isTransitioning])
+  }, [isLoading, currentTexture, currentIndex, isTransitioning, onFirstTextureLoaded])
   
   // Cambiar imagen periódicamente
   useEffect(() => {
@@ -270,156 +277,6 @@ function ArchillectSphere() {
   )
 }
 
-function OrbitingBook({ position, color, label }: { position: [number, number, number], color: string, label: string }) {
-  const groupRef = useRef<THREE.Group>(null)
-  const [hovered, setHovered] = useState(false)
-  const [displayedText, setDisplayedText] = useState('')
-  const { gl, camera, scene } = useThree()
-  const raycaster = useMemo(() => new THREE.Raycaster(), [])
-  
-  // Manejar cursor
-  useEffect(() => {
-    if (hovered) {
-      gl.domElement.style.cursor = 'pointer'
-    } else {
-      gl.domElement.style.cursor = 'auto'
-    }
-    
-    return () => {
-      gl.domElement.style.cursor = 'auto'
-    }
-  }, [hovered, gl])
-  
-  // Efecto typewriter
-  useEffect(() => {
-    if (hovered) {
-      setDisplayedText('')
-      let currentIndex = 0
-      const interval = setInterval(() => {
-        if (currentIndex <= label.length) {
-          setDisplayedText(label.slice(0, currentIndex))
-          currentIndex++
-        } else {
-          clearInterval(interval)
-        }
-      }, 50)
-      
-      return () => {
-        clearInterval(interval)
-        setDisplayedText('')
-      }
-    } else {
-      setDisplayedText('')
-    }
-  }, [hovered, label])
-  
-  const handlePointerOver = (e: any) => {
-    e.stopPropagation()
-    
-    // Verificar si el objeto está oculto detrás de la esfera principal
-    if (groupRef.current) {
-      const bookPosition = new THREE.Vector3()
-      groupRef.current.getWorldPosition(bookPosition)
-      
-      // Crear un rayo desde la cámara hacia el libro
-      const direction = bookPosition.clone().sub(camera.position).normalize()
-      raycaster.set(camera.position, direction)
-      
-      // Obtener todas las intersecciones
-      const intersects = raycaster.intersectObjects(scene.children, true)
-      
-      // Buscar si hay una esfera grande antes que el libro
-      let sphereDistance = Infinity
-      let bookDistance = Infinity
-      
-      for (const intersect of intersects) {
-        const object = intersect.object
-        
-        // Identificar la esfera principal por su geometría
-        if (object.geometry && 
-            object.geometry.type === 'SphereGeometry' && 
-            (object.geometry as any).parameters.radius === SCENE_CONFIG.SPHERE_RADIUS) {
-          sphereDistance = intersect.distance
-        }
-        
-        // Identificar el libro actual
-        if (object.parent === groupRef.current || object === e.object) {
-          bookDistance = intersect.distance
-        }
-      }
-      
-      // Solo activar hover si el libro está más cerca que la esfera
-      if (bookDistance < sphereDistance) {
-        setHovered(true)
-      }
-    }
-  }
-  
-  const handlePointerOut = () => {
-    setHovered(false)
-  }
-  
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y = state.clock.elapsedTime * SCENE_CONFIG.BOOK_ROTATION_SPEED
-      groupRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 2) * 0.2
-      
-      const scale = hovered ? 1.2 : 1
-      groupRef.current.scale.lerp(new THREE.Vector3(scale, scale, scale), 0.1)
-    }
-  })
-  
-  return (
-    <Float speed={1.5} rotationIntensity={0.5} floatIntensity={0.5}>
-      <group 
-        ref={groupRef} 
-        position={position}
-        onPointerOver={handlePointerOver}
-        onPointerOut={handlePointerOut}
-      >
-        <mesh>
-          <boxGeometry args={[1, 1.4, 0.2]} />
-          <meshStandardMaterial 
-            color={color}
-            emissive={color}
-            emissiveIntensity={hovered ? 0.3 : 0.1}
-          />
-        </mesh>
-        <mesh scale={[1.2, 1.6, 0.3]}>
-          <boxGeometry args={[1, 1, 1]} />
-          <meshBasicMaterial
-            color={color}
-            transparent
-            opacity={0.1}
-            blending={THREE.AdditiveBlending}
-          />
-        </mesh>
-        
-        {/* Tooltip/Label con efecto typewriter */}
-        {hovered && (
-          <Html
-            position={[0, 1.2, 0]}
-            center
-            style={{
-              transition: 'opacity 0.3s',
-              opacity: hovered ? 1 : 0,
-              pointerEvents: 'none',
-              cursor: 'pointer'
-            }}
-          >
-            <div className="bg-black/80 px-3 py-1 rounded-lg backdrop-blur-sm">
-              <p className="text-white text-xs font-medium whitespace-nowrap">
-                {displayedText}
-                <span className="animate-pulse">|</span>
-              </p>
-            </div>
-          </Html>
-        )}
-      </group>
-    </Float>
-  )
-}
-
 function OrbitingSphere({ position, radius, color, orbitRadius, orbitSpeed, phaseOffset = 0, label }: { 
   position: [number, number, number], 
   radius: number, 
@@ -520,11 +377,16 @@ function OrbitingSphere({ position, radius, color, orbitRadius, orbitSpeed, phas
   
   useFrame((state) => {
     if (groupRef.current) {
-      // Órbita circular con fase inicial única
-      const time = state.clock.elapsedTime * orbitSpeed + phaseOffset
-      groupRef.current.position.x = Math.cos(time) * orbitRadius
-      groupRef.current.position.z = Math.sin(time) * orbitRadius
-      groupRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 3 + phaseOffset) * 0.15
+      if (orbitRadius > 0) {
+        // Órbita circular con fase inicial única
+        const time = state.clock.elapsedTime * orbitSpeed + phaseOffset
+        groupRef.current.position.x = Math.cos(time) * orbitRadius
+        groupRef.current.position.z = Math.sin(time) * orbitRadius
+        groupRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 3 + phaseOffset) * 0.15
+      } else {
+        // Si no hay órbita, solo movimiento vertical flotante
+        groupRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 2) * 0.2
+      }
     }
     
     if (meshRef.current) {
@@ -544,12 +406,14 @@ function OrbitingSphere({ position, radius, color, orbitRadius, orbitSpeed, phas
         onPointerOut={handlePointerOut}
       >
         <sphereGeometry args={[radius, 32, 32]} />
-        <meshStandardMaterial 
-          color={color}
-          emissive={color}
-          emissiveIntensity={hovered ? 0.4 : 0.2}
-          metalness={0.5}
-          roughness={0.3}
+        <meshPhysicalMaterial 
+          color={radius === 0.3 ? "#e11d48" : "#6495ED"}  // Rojo para pequeñas, azul cobalto para grandes
+          metalness={0.95}  // Muy metálico
+          roughness={0.05}  // Muy brillante
+          clearcoat={1}     // Capa de barniz
+          clearcoatRoughness={0}
+          emissive={radius === 0.3 ? "#e11d48" : "#4682b4"}  // Emisión según tamaño
+          emissiveIntensity={hovered ? 0.3 : 0.1}
         />
       </mesh>
       {/* Aura de la esfera */}
@@ -677,93 +541,139 @@ function Particles() {
 
 function MainScene() {
   const [filesLoaded, setFilesLoaded] = useState(false)
+  const [firstTextureLoaded, setFirstTextureLoaded] = useState(false)
   
   return (
     <>
       {/* Cargar el listado de archivos */}
       <ArchillectLoader onLoaded={(files) => setFilesLoaded(files.length > 0)} />
       
-      {/* Iluminación */}
+      {/* Iluminación - siempre visible */}
       <ambientLight intensity={0.5} />
       <pointLight position={[10, 10, 10]} intensity={1} />
       <pointLight position={[-10, 10, -10]} intensity={0.5} color="#00ffff" />
       <directionalLight position={[0, 10, 0]} intensity={0.5} />
       
-      {/* Esfera central */}
-      {filesLoaded && <ArchillectSphere />}
-      
-      {/* Anillos orbitales principales */}
-      <OrbitalRing radius={6} height={0} speed={0.2} />
-      <OrbitalRing radius={9} height={2} speed={-0.15} />
-      <OrbitalRing radius={12} height={-2} speed={0.1} />
-      
-      {/* Anillos orbitales pequeños para las esferas */}
-      <OrbitalRing radius={4.5} height={1} speed={0.25} thickness={0.05} opacity={0.2} />
-      <OrbitalRing radius={7.5} height={-1} speed={-0.18} thickness={0.05} opacity={0.2} />
-      
-      {/* Libros flotantes */}
-      <OrbitingBook position={[7, 0, 0]} color={SCENE_CONFIG.BOOK_COLORS.green} label="Libro 1" />
-      <OrbitingBook position={[-7, 0, 0]} color={SCENE_CONFIG.BOOK_COLORS.red} label="Libro 2" />
-      <OrbitingBook position={[0, 0, 7]} color={SCENE_CONFIG.BOOK_COLORS.blue} label="Libro 3" />
-      <OrbitingBook position={[0, 0, -7]} color={SCENE_CONFIG.BOOK_COLORS.yellow} label="Libro 4" />
-      <OrbitingBook position={[5, 2, 5]} color={SCENE_CONFIG.BOOK_COLORS.magenta} label="Libro 5" />
-      <OrbitingBook position={[-5, -1, -5]} color={SCENE_CONFIG.BOOK_COLORS.cyan} label="Libro 6" />
-      
-      {/* Esferas pequeñas orbitantes - cada una con velocidad y fase única */}
-      <OrbitingSphere 
-        position={[0, 0.8, 0]} 
-        radius={0.3} 
-        color="#e11d48" 
-        orbitRadius={5.0}
-        orbitSpeed={0.12}
-        phaseOffset={0}
-        label="Esfera 1"
-      />
-      <OrbitingSphere 
-        position={[0, -0.3, 0]} 
-        radius={0.3} 
-        color="#e11d48" 
-        orbitRadius={4.2}
-        orbitSpeed={-0.08}
-        phaseOffset={Math.PI * 0.4}
-        label="Esfera 2"
-      />
-      <OrbitingSphere 
-        position={[0, 0.5, 0]} 
-        radius={0.3} 
-        color="#e11d48" 
-        orbitRadius={6.8}
-        orbitSpeed={0.05}
-        phaseOffset={Math.PI * 0.8}
-        label="Esfera 3"
-      />
-      <OrbitingSphere 
-        position={[0, -0.6, 0]} 
-        radius={0.3} 
-        color="#e11d48" 
-        orbitRadius={7.8}
-        orbitSpeed={-0.1}
-        phaseOffset={Math.PI * 1.2}
-        label="Esfera 4"
-      />
-      <OrbitingSphere 
-        position={[0, 0.2, 0]} 
-        radius={0.3} 
-        color="#e11d48" 
-        orbitRadius={5.5}
-        orbitSpeed={0.07}
-        phaseOffset={Math.PI * 1.6}
-        label="Esfera 5"
-      />
-      
-      {/* Partículas de fondo */}
+      {/* Partículas y fondo - siempre visibles */}
       <Particles />
       
-      {/* Fondo */}
+      {/* Fondo estrellado - siempre visible */}
       <mesh>
         <boxGeometry args={[60, 60, 60]} />
         <meshBasicMaterial color="#000011" side={THREE.BackSide} />
       </mesh>
+      
+      {/* Contenedor para todos los objetos 3D - solo visible cuando la textura esté cargada */}
+      <group visible={firstTextureLoaded}>
+        {/* Esfera central */}
+        {filesLoaded && <ArchillectSphere onFirstTextureLoaded={setFirstTextureLoaded} />}
+        
+        {/* Anillos orbitales principales */}
+        <OrbitalRing radius={6} height={0} speed={0.2} />
+        <OrbitalRing radius={9} height={2} speed={-0.15} />
+        <OrbitalRing radius={12} height={-2} speed={0.1} />
+        
+        {/* Anillos orbitales pequeños para las esferas */}
+        <OrbitalRing radius={4.5} height={1} speed={0.25} thickness={0.05} opacity={0.2} />
+        <OrbitalRing radius={7.5} height={-1} speed={-0.18} thickness={0.05} opacity={0.2} />
+        
+        {/* Esferas grandes (antes eran libros) - con efecto metálico cobalto */}
+        <OrbitingSphere 
+          position={[7, 0, 0]} 
+          radius={0.5}  // Más grandes que las pequeñas (0.3)
+          color="#6495ED"  // Azul cobalto para todas
+          orbitRadius={0}  // Sin órbita, posición fija
+          orbitSpeed={0}
+          label="Libro 1"
+        />
+        <OrbitingSphere 
+          position={[-7, 0, 0]} 
+          radius={0.5} 
+          color="#6495ED"  // Azul cobalto
+          orbitRadius={0}
+          orbitSpeed={0}
+          label="Libro 2"
+        />
+        <OrbitingSphere 
+          position={[0, 0, 7]} 
+          radius={0.5} 
+          color="#6495ED"  // Azul cobalto
+          orbitRadius={0}
+          orbitSpeed={0}
+          label="Libro 3"
+        />
+        <OrbitingSphere 
+          position={[0, 0, -7]} 
+          radius={0.5} 
+          color="#6495ED"  // Azul cobalto
+          orbitRadius={0}
+          orbitSpeed={0}
+          label="Libro 4"
+        />
+        <OrbitingSphere 
+          position={[5, 2, 5]} 
+          radius={0.5} 
+          color="#6495ED"  // Azul cobalto
+          orbitRadius={0}
+          orbitSpeed={0}
+          label="Libro 5"
+        />
+        <OrbitingSphere 
+          position={[-5, -1, -5]} 
+          radius={0.5} 
+          color="#6495ED"  // Azul cobalto
+          orbitRadius={0}
+          orbitSpeed={0}
+          label="Libro 6"
+        />
+        
+        {/* Esferas pequeñas orbitantes - cada una con velocidad y fase única */}
+        <OrbitingSphere 
+          position={[0, 0.8, 0]} 
+          radius={0.3} 
+          color="#e11d48" 
+          orbitRadius={5.0}
+          orbitSpeed={0.12}
+          phaseOffset={0}
+          label="Esfera 1"
+        />
+        <OrbitingSphere 
+          position={[0, -0.3, 0]} 
+          radius={0.3} 
+          color="#e11d48" 
+          orbitRadius={4.2}
+          orbitSpeed={-0.08}
+          phaseOffset={Math.PI * 0.4}
+          label="Esfera 2"
+        />
+        <OrbitingSphere 
+          position={[0, 0.5, 0]} 
+          radius={0.3} 
+          color="#e11d48" 
+          orbitRadius={6.8}
+          orbitSpeed={0.05}
+          phaseOffset={Math.PI * 0.8}
+          label="Esfera 3"
+        />
+        <OrbitingSphere 
+          position={[0, -0.6, 0]} 
+          radius={0.3} 
+          color="#e11d48" 
+          orbitRadius={7.8}
+          orbitSpeed={-0.1}
+          phaseOffset={Math.PI * 1.2}
+          label="Esfera 4"
+        />
+        <OrbitingSphere 
+          position={[0, 0.2, 0]} 
+          radius={0.3} 
+          color="#e11d48" 
+          orbitRadius={5.5}
+          orbitSpeed={0.07}
+          phaseOffset={Math.PI * 1.6}
+          label="Esfera 5"
+        />
+      </group>
       
       <OrbitControls 
         enablePan={true}
