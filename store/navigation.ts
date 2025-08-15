@@ -58,7 +58,7 @@ export const useNavigationStore = create<NavigationState>((set) => ({
             isTransitioning: false,
             transitionProgress: 0,
           })
-        }, 150) // Delay para evitar el destello
+        }, 300) // Aumentado delay para asegurar que no hay destello
       }
       
       set({ transitionProgress: progress })

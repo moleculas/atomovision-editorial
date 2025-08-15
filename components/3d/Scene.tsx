@@ -53,6 +53,10 @@ function ArchillectSphere() {
   const handleClick = () => {
     console.log('=== CLICK EN ESFERA ===')
     
+    // PRIMERO: Limpiar el tooltip inmediatamente
+    setHovered(false)
+    setDisplayedText('')
+    
     // Detener el cambio automático de imágenes durante la transición
     setIsTransitioning(true)
     if (intervalRef.current) {
@@ -123,8 +127,8 @@ function ArchillectSphere() {
     
     const url = `${ARCHILLECT_CONFIG.PHP_PROXY_URL}${encodeURIComponent(fileName)}`
     
-    // Limpiar textura anterior
-    if (currentTexture) {
+    // Limpiar textura anterior SOLO si NO estamos en transición
+    if (currentTexture && !isTransitioning) {
       currentTexture.dispose()
     }
     
@@ -151,7 +155,7 @@ function ArchillectSphere() {
         }, 1000)
       }
     )
-  }, [isLoading, currentTexture, currentIndex])
+  }, [isLoading, currentTexture, currentIndex, isTransitioning])
   
   // Cambiar imagen periódicamente
   useEffect(() => {

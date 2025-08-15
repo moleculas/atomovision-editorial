@@ -55,21 +55,9 @@ export function SceneManager() {
         }}
       >
         <Suspense fallback={null}>
-          {/* Durante la transición, mostrar la escena desde la que venimos */}
-          {isTransitioning && (
-            <>
-              {/* Usar previousScene en lugar de currentScene */}
-              <MainScene />
-            </>
-          )}
-          
-          {/* Cuando NO hay transición, mostrar la escena actual */}
-          {!isTransitioning && (
-            <>
-              {currentScene === 'home' && <MainScene />}
-              {currentScene === 'catalog' && <CatalogScene />}
-            </>
-          )}
+          {/* Renderizar SIEMPRE basado en currentScene, sin importar isTransitioning */}
+          {currentScene === 'home' && <MainScene />}
+          {currentScene === 'catalog' && <CatalogScene />}
         </Suspense>
       </Canvas>
       
@@ -83,13 +71,7 @@ export function SceneManager() {
           }}
         />
       )}
-      
-      {/* Debug visual del overlay */}
-      <div className="absolute bottom-4 left-4 bg-white/90 p-2 rounded text-black text-xs z-50">
-        <div>Scene: {currentScene}</div>
-        <div>Transitioning: {isTransitioning ? 'YES' : 'NO'}</div>
-        <div>Progress: {transitionProgress.toFixed(2)}</div>
-      </div>
+
     </div>
   )
 }
