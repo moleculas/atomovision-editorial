@@ -273,25 +273,29 @@ function SphereItem({ sphere, isHovered, texture, onPointerOver, onPointerOut }:
       <sphereGeometry args={[sphere.radius, 64, 64]} />
       {texture ? (
         <meshPhysicalMaterial
-          map={texture}
-          color={isHovered ? "#e8f2ff" : "#b8d4f1"}      // Azul muy claro en lugar de blanco puro
-          metalness={isHovered ? 0.2 : 0.3}                // Solo un poco menos metálico
-          roughness={0.05}
-          clearcoat={1}
-          clearcoatRoughness={0}
+          map={texture}                                   // Mantener la textura como map principal
+          color="#ffffff"                                // Blanco puro
+          metalness={0.3}                                 // Reducido para ver mejor la textura
+          roughness={0.05}                                // Muy bajo para máximo brillo
+          clearcoat={1}                                   // Máximo recubrimiento brillante
+          clearcoatRoughness={0}                          // Recubrimiento perfectamente liso
+          reflectivity={1}                                // Máxima reflectividad
           transparent
-          opacity={isHovered ? 0.95 : 0.85}                // Menos cambio de opacidad
-          emissive={isHovered ? "#7fb3d5" : "#4682b4"}    // Emisión azul claro en lugar de blanco
-          emissiveIntensity={isHovered ? 0.15 : 0.1}       // Menos intensidad (0.15 vs 0.3)
+          opacity={isHovered ? 1 : 0.95}                  // Opacidad muy alta
+          emissive={isHovered ? "#808080" : "#404040"}  // Emisión gris para iluminar
+          emissiveIntensity={isHovered ? 0.3 : 0.2}      // Mayor intensidad para brillo
           side={THREE.DoubleSide}
         />
       ) : (
-        <meshStandardMaterial
-          color={isHovered ? "#b8d4f1" : "#6495ED"}       // Azul claro en lugar de blanco
-          metalness={isHovered ? 0.7 : 0.9}
-          roughness={0.1}
-          emissive={isHovered ? "#6495ED" : "#000000"}    // Emisión azul
-          emissiveIntensity={isHovered ? 0.1 : 0}          // Intensidad reducida
+        <meshPhysicalMaterial
+          color="#f0f0f0"                                // Gris muy claro casi blanco
+          metalness={0.5}                                 // Medio metálico
+          roughness={0.05}                                // Muy brillante
+          clearcoat={1}
+          clearcoatRoughness={0}
+          reflectivity={1}
+          emissive={isHovered ? "#a0a0a0" : "#808080"}  // Emisión gris clara
+          emissiveIntensity={isHovered ? 0.3 : 0.2}      // Buena intensidad de brillo
         />
       )}
       
