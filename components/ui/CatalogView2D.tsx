@@ -1,45 +1,60 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { getBooksMock } from '@/lib/cms'
+import { getBooks } from '@/lib/cms'
+import { getGenres } from '@/lib/services/genre.service'
 import { Book } from '@/types'
 import { BookCard } from './BookCard'
-import { Filter, Grid, List } from 'lucide-react'
+import { Grid, List, ChevronDown } from 'lucide-react'
 
 export function CatalogView2D() {
   const searchParams = useSearchParams()
   const [books, setBooks] = useState<Book[]>([])
+  const [genres, setGenres] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [sortBy, setSortBy] = useState('releaseDate')
-  const [filterCategory, setFilterCategory] = useState(searchParams.get('category') || 'all')
-  const [filterFormat, setFilterFormat] = useState('all')
-  const [showFilters, setShowFilters] = useState(false)
+  const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
+  const [showGenreDropdown, setShowGenreDropdown] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    async function loadBooks() {
+    async function loadData() {
       try {
-        const data = await getBooksMock()
-        setBooks(data)
+        const [booksData, genresData] = await Promise.all([
+          getBooks(),
+          getGenres()
+        ])
+        setBooks(booksData)
+        setGenres(genresData)
       } catch (error) {
-        console.error('Error loading books:', error)
+        console.error('Error loading data:', error)
       } finally {
         setLoading(false)
       }
     }
-    loadBooks()
+    loadData()
+  }, [])
+
+  // Cerrar dropdown cuando se hace clic fuera
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowGenreDropdown(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
   }, [])
 
   // Filtrar libros
   const filteredBooks = books.filter((book) => {
-    if (filterCategory !== 'all' && !book.categories.includes(filterCategory)) {
-      return false
-    }
-    if (filterFormat !== 'all') {
-      if (filterFormat === 'ebook' && !book.formats.ebook) return false
-      if (filterFormat === 'paperback' && !book.formats.paperback) return false
-      if (filterFormat === 'hardcover' && !book.formats.hardcover) return false
+    if (selectedGenre) {
+      return book.categories.includes(selectedGenre)
     }
     return true
   })
@@ -78,20 +93,56 @@ export function CatalogView2D() {
         <div className="mb-8">
           <h1 className="text-4xl font-playfair mb-4">Catálogo de libros</h1>
           <p className="text-lg text-muted-foreground">
-            Explora nuestra colección completa de libros digitales y físicos
+            Explora nuestra colección completa de libros de ciencia ficción y fantasía
           </p>
         </div>
 
         {/* Controles */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-accent rounded-lg hover:bg-accent/80 transition-colors"
-            >
-              <Filter className="w-4 h-4" />
-              Filtros
-            </button>
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setShowGenreDropdown(!showGenreDropdown)}
+                className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                  selectedGenre
+                    ? 'bg-primary text-white'
+                    : 'bg-accent hover:bg-accent/80'
+                }`}
+              >
+                {selectedGenre || 'Género'}
+                <ChevronDown className={`w-4 h-4 transition-transform ${showGenreDropdown ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {showGenreDropdown && (
+                <div className="absolute top-full mt-2 w-64 max-h-96 overflow-y-auto bg-card rounded-lg shadow-lg border z-50">
+                  <button
+                    onClick={() => {
+                      setSelectedGenre(null)
+                      setShowGenreDropdown(false)
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-accent transition-colors text-sm"
+                  >
+                    Todos los géneros
+                  </button>
+                  {genres.map((genre) => (
+                    <button
+                      key={genre.id || genre._id}
+                      onClick={() => {
+                        setSelectedGenre(genre.name)
+                        setShowGenreDropdown(false)
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-accent transition-colors flex items-center gap-2 text-sm"
+                    >
+                      {genre.icon && <span>{genre.icon}</span>}
+                      <span>{genre.name}</span>
+                      {genre.bookCount > 0 && (
+                        <span className="ml-auto text-xs text-muted-foreground">({genre.bookCount})</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             
             <select
               value={sortBy}
@@ -122,55 +173,6 @@ export function CatalogView2D() {
             </button>
           </div>
         </div>
-
-        {/* Filtros expandibles */}
-        {showFilters && (
-          <div className="bg-card rounded-lg p-6 mb-6 shadow">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-semibold mb-3">Categorías</h3>
-                <div className="space-y-2">
-                  {['all', 'Ficción', 'Ensayo', 'Poesía', 'Infantil'].map((category) => (
-                    <label key={category} className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        name="category"
-                        value={category}
-                        checked={filterCategory === category}
-                        onChange={(e) => setFilterCategory(e.target.value)}
-                        className="text-primary"
-                      />
-                      <span>{category === 'all' ? 'Todas' : category}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="font-semibold mb-3">Formato</h3>
-                <div className="space-y-2">
-                  {['all', 'ebook', 'paperback', 'hardcover'].map((format) => (
-                    <label key={format} className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        name="format"
-                        value={format}
-                        checked={filterFormat === format}
-                        onChange={(e) => setFilterFormat(e.target.value)}
-                        className="text-primary"
-                      />
-                      <span>
-                        {format === 'all' ? 'Todos' :
-                         format === 'ebook' ? 'eBook' :
-                         format === 'paperback' ? 'Tapa blanda' : 'Tapa dura'}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Resultados */}
         <div className="mb-4 text-sm text-muted-foreground">

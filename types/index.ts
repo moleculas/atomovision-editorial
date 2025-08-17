@@ -60,6 +60,8 @@ export interface Book {
   }
   featured: boolean
   rating?: number
+  pages?: number
+  pageCount?: number
   // SEO
   metaTitle?: string
   metaDescription?: string

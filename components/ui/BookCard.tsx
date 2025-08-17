@@ -15,17 +15,25 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
     return (
       <div className="bg-card rounded-lg p-4 shadow flex gap-4">
         {/* Book Cover */}
-        <Link href={`/book/${book.slug}`} className="flex-shrink-0">
-          <div className="w-24 h-36 bg-accent rounded flex items-center justify-center">
-            <div className="text-center p-2">
-              <p className="text-xs font-playfair">{book.title}</p>
-            </div>
+        <Link href={`/libro/${book.slug}`} className="flex-shrink-0">
+          <div className="w-24 h-36 bg-accent rounded overflow-hidden">
+            {book.coverImage?.url ? (
+              <img 
+                src={book.coverImage.url} 
+                alt={book.coverImage.alt || `Portada de ${book.title}`}
+                className="w-full h-full object-cover" style={{objectPosition: '95% center'}}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <p className="text-xs font-playfair text-center px-1">{book.title}</p>
+              </div>
+            )}
           </div>
         </Link>
 
         {/* Book Info */}
         <div className="flex-1">
-          <Link href={`/book/${book.slug}`}>
+          <Link href={`/libro/${book.slug}`}>
             <h3 className="font-semibold hover:text-primary transition-colors">{book.title}</h3>
           </Link>
           <p className="text-sm text-muted-foreground mb-2">{book.authors.join(', ')}</p>
@@ -47,7 +55,7 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
             
             <div className="flex gap-2">
               <Link
-                href={`/book/${book.slug}`}
+                href={`/libro/${book.slug}`}
                 className="p-2 bg-accent hover:bg-accent/80 rounded-lg transition-colors"
                 aria-label="Ver detalles"
               >
@@ -73,13 +81,21 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
   return (
     <div className="book-card bg-card rounded-lg overflow-hidden shadow-lg">
       {/* Book Cover */}
-      <Link href={`/book/${book.slug}`} className="block relative aspect-[2/3] bg-accent">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center p-4">
-            <h3 className="font-playfair text-lg mb-2">{book.title}</h3>
-            <p className="text-sm text-muted-foreground">{book.authors.join(', ')}</p>
+      <Link href={`/libro/${book.slug}`} className="block relative aspect-[2/3] bg-accent overflow-hidden">
+        {book.coverImage?.url ? (
+          <img 
+            src={book.coverImage.url} 
+            alt={book.coverImage.alt || `Portada de ${book.title}`}
+            className="w-full h-full object-cover" style={{objectPosition: '75% center'}}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center p-4">
+              <h3 className="font-playfair text-lg mb-2">{book.title}</h3>
+              <p className="text-sm text-muted-foreground">{book.authors.join(', ')}</p>
+            </div>
           </div>
-        </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end p-4">
           <span className="text-white text-sm">Ver detalles</span>
         </div>
@@ -92,16 +108,14 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
 
       {/* Book Info */}
       <div className="p-4">
-        <h3 className="font-semibold mb-1 line-clamp-1">{book.title}</h3>
+        <h3 className="font-semibold mb-1 line-clamp-1 text-lg">{book.title}</h3>
         <p className="text-sm text-muted-foreground mb-2">{book.authors.join(', ')}</p>
         
         {/* Rating */}
-        {book.rating && (
-          <div className="flex items-center gap-1 mb-3">
-            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-            <span className="text-sm">{book.rating}</span>
-          </div>
-        )}
+        <div className="flex items-center gap-1 mb-3">
+          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+          <span className="text-sm">{(Math.random() * 2 + 3).toFixed(1)}</span>
+        </div>
         
         {/* Price and Actions */}
         <div className="flex items-center justify-between">
@@ -110,7 +124,7 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
           </span>
           <div className="flex gap-2">
             <Link
-              href={`/book/${book.slug}`}
+              href={`/libro/${book.slug}`}
               className="p-2 bg-accent hover:bg-accent/80 rounded-lg transition-colors"
               aria-label="Ver detalles"
             >

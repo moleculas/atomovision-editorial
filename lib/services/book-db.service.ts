@@ -1,25 +1,10 @@
-// Sistema CMS simplificado que conecta con MongoDB mediante APIs
-// Funciona tanto en cliente como servidor
+// Este archivo conecta la aplicación pública con los datos reales mediante API
+// NO importa MongoDB directamente - usa fetch para llamar a las APIs
 
-import type { Book, Collection } from '@/types'
-
-// Para componentes del servidor, necesitamos la URL completa
-const getApiUrl = () => {
-  if (typeof window === 'undefined') {
-    // Estamos en el servidor
-    return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-  }
-  // Estamos en el cliente
-  return ''
-}
-
-// Mantener compatibilidad con urlFor
-export function urlFor(source: any) {
-  return { url: () => source?.url || '/placeholder.jpg' }
-}
+import { Book as BookType } from '@/types'
 
 // Convertir respuesta de API a tipo Book del frontend
-function apiBookToType(book: any): Book {
+function apiBookToType(book: any): BookType {
   return {
     id: book.id,
     slug: book.slug,
@@ -71,9 +56,9 @@ function apiBookToType(book: any): Book {
   }
 }
 
-export async function getBooks(): Promise<Book[]> {
+export async function getBooksFromDB(): Promise<BookType[]> {
   try {
-    const response = await fetch(`${getApiUrl()}/api/public/books`, {
+    const response = await fetch('/api/public/books', {
       cache: 'no-store'
     })
     
@@ -89,9 +74,9 @@ export async function getBooks(): Promise<Book[]> {
   }
 }
 
-export async function getBookBySlug(slug: string): Promise<Book | null> {
+export async function getBookBySlugFromDB(slug: string): Promise<BookType | null> {
   try {
-    const response = await fetch(`${getApiUrl()}/api/public/books/${slug}`, {
+    const response = await fetch(`/api/public/books/${slug}`, {
       cache: 'no-store'
     })
     
@@ -107,9 +92,9 @@ export async function getBookBySlug(slug: string): Promise<Book | null> {
   }
 }
 
-export async function getFeaturedBooks(): Promise<Book[]> {
+export async function getFeaturedBooksFromDB(): Promise<BookType[]> {
   try {
-    const response = await fetch(`${getApiUrl()}/api/public/books?featured=true&limit=6`, {
+    const response = await fetch('/api/public/books?featured=true&limit=6', {
       cache: 'no-store'
     })
     
@@ -125,9 +110,9 @@ export async function getFeaturedBooks(): Promise<Book[]> {
   }
 }
 
-export async function getBooksByCategory(category: string): Promise<Book[]> {
+export async function getBooksByCategoryFromDB(categoryName: string): Promise<BookType[]> {
   try {
-    const response = await fetch(`${getApiUrl()}/api/public/books?category=${encodeURIComponent(category)}`, {
+    const response = await fetch(`/api/public/books?category=${encodeURIComponent(categoryName)}`, {
       cache: 'no-store'
     })
     
@@ -143,9 +128,9 @@ export async function getBooksByCategory(category: string): Promise<Book[]> {
   }
 }
 
-export async function searchBooks(query: string): Promise<Book[]> {
+export async function searchBooksInDB(query: string): Promise<BookType[]> {
   try {
-    const response = await fetch(`${getApiUrl()}/api/public/books?search=${encodeURIComponent(query)}`, {
+    const response = await fetch(`/api/public/books?search=${encodeURIComponent(query)}`, {
       cache: 'no-store'
     })
     
@@ -159,14 +144,4 @@ export async function searchBooks(query: string): Promise<Book[]> {
     console.error('Error searching books:', error)
     return []
   }
-}
-
-export async function getCollections(): Promise<Collection[]> {
-  // TODO: Implementar colecciones desde MongoDB
-  return []
-}
-
-export async function getCollectionBySlug(slug: string): Promise<Collection | null> {
-  // TODO: Implementar colecciones desde MongoDB
-  return null
 }
