@@ -1,0 +1,140 @@
+import crypto from 'crypto'
+
+/**
+ * Genera un registro único AtomoVision
+ * Formato: ATV-YYYYMM-XX-XXXXXXXX-XXX
+ * 
+ * Donde:
+ * - ATV: Prefijo fijo (ATomoVision)
+ * - YYYYMM: Año y mes de creación
+ * - XX: Código de tipo (BP = Book Published, BD = Book Draft, etc.)
+ * - XXXXXXXX: Hash único de 8 caracteres
+ * - XXX: Checksum de 3 caracteres
+ * 
+ * Ejemplo: ATV-202508-BP-F025DB8B-W4K
+ */
+
+export type BookType = 'BP' | 'BD' | 'BA' // Published, Draft, Archived
+
+export function generateRegistroAtomoVision(type: BookType = 'BP'): string {
+  // Obtener fecha actual
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const dateCode = `${year}${month}`
+  
+  // Generar hash único
+  const randomBytes = crypto.randomBytes(16)
+  const hash = crypto.createHash('sha256')
+    .update(randomBytes)
+    .update(Date.now().toString())
+    .digest('hex')
+    .substring(0, 8)
+    .toUpperCase()
+  
+  // Crear el código base sin checksum
+  const baseCode = `ATV-${dateCode}-${type}-${hash}`
+  
+  // Generar checksum
+  const checksum = generateChecksum(baseCode)
+  
+  // Retornar código completo
+  return `${baseCode}-${checksum}`
+}
+
+/**
+ * Genera un checksum de 3 caracteres para validación
+ */
+function generateChecksum(input: string): string {
+  const hash = crypto.createHash('md5')
+    .update(input)
+    .digest('hex')
+  
+  // Convertir a base36 y tomar los primeros 3 caracteres
+  const num = parseInt(hash.substring(0, 8), 16)
+  const checksum = num.toString(36).substring(0, 3).toUpperCase()
+  
+  // Asegurar que siempre sean 3 caracteres
+  return checksum.padEnd(3, '0')
+}
+
+/**
+ * Valida un registro AtomoVision
+ */
+export function validateRegistroAtomoVision(registro: string): boolean {
+  // Validar formato básico
+  const regex = /^ATV-\d{6}-[A-Z]{2}-[A-F0-9]{8}-[A-Z0-9]{3}$/
+  if (!regex.test(registro)) {
+    return false
+  }
+  
+  // Separar el checksum
+  const parts = registro.split('-')
+  const checksum = parts.pop()
+  const baseCode = parts.join('-')
+  
+  // Validar checksum
+  const expectedChecksum = generateChecksum(baseCode)
+  return checksum === expectedChecksum
+}
+
+/**
+ * Extrae información de un registro AtomoVision
+ */
+export function parseRegistroAtomoVision(registro: string) {
+  if (!validateRegistroAtomoVision(registro)) {
+    throw new Error('Registro AtomoVision inválido')
+  }
+  
+  const parts = registro.split('-')
+  
+  return {
+    prefix: parts[0],
+    yearMonth: parts[1],
+    year: parseInt(parts[1].substring(0, 4)),
+    month: parseInt(parts[1].substring(4, 6)),
+    type: parts[2] as BookType,
+    hash: parts[3],
+    checksum: parts[4],
+  }
+}
+
+/**
+ * Genera un slug amigable a partir del título
+ */
+export function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .trim()
+    .normalize('NFD') // Normalizar caracteres Unicode
+    .replace(/[\u0300-\u036f]/g, '') // Eliminar diacríticos
+    .replace(/[^a-z0-9\s-]/g, '') // Solo letras, números, espacios y guiones
+    .replace(/\s+/g, '-') // Espacios a guiones
+    .replace(/-+/g, '-') // Múltiples guiones a uno solo
+    .replace(/^-+|-+$/g, '') // Eliminar guiones al inicio y final
+}
+
+/**
+ * Genera un ISBN-13 válido (para desarrollo/testing)
+ * En producción, deberías usar ISBNs reales comprados
+ */
+export function generateTestISBN(): string {
+  // Prefijo para España: 978-84
+  const prefix = '97884'
+  
+  // Generar 7 dígitos aleatorios
+  const randomDigits = Array.from({ length: 7 }, () => 
+    Math.floor(Math.random() * 10)
+  ).join('')
+  
+  const baseISBN = prefix + randomDigits
+  
+  // Calcular dígito de control
+  let sum = 0
+  for (let i = 0; i < 12; i++) {
+    sum += parseInt(baseISBN[i]) * (i % 2 === 0 ? 1 : 3)
+  }
+  const checkDigit = (10 - (sum % 10)) % 10
+  
+  return baseISBN + checkDigit
+}
