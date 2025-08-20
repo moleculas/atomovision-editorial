@@ -10,6 +10,7 @@ interface CartStore {
   clearCart: () => void
   getTotalItems: () => number
   getTotalPrice: () => number
+  hasItem: (bookId: string, format: string) => boolean
 }
 
 interface UIStore {
@@ -51,14 +52,9 @@ export const useCartStore = create<CartStore>()(
             (item) => item.bookId === book.id && item.format === format
           )
           
+          // Si ya existe, no hacer nada (para libros digitales)
           if (existingItem) {
-            return {
-              items: state.items.map((item) =>
-                item.bookId === book.id && item.format === format
-                  ? { ...item, quantity: item.quantity + quantity }
-                  : item
-              ),
-            }
+            return state
           }
           
           const formatData = book.formats[format]
@@ -72,6 +68,10 @@ export const useCartStore = create<CartStore>()(
                 format,
                 quantity,
                 price: book.price,
+                // Información adicional para UI
+                title: book.title,
+                coverImage: book.coverImage,
+                selectedFormat: format,
               },
             ],
           }
@@ -109,6 +109,12 @@ export const useCartStore = create<CartStore>()(
       
       getTotalPrice: () => {
         return get().items.reduce((total, item) => total + item.price * item.quantity, 0)
+      },
+      
+      hasItem: (bookId, format) => {
+        return get().items.some(
+          (item) => item.bookId === bookId && item.format === format
+        )
       },
     }),
     {

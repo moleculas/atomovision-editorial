@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { getBooks } from '@/lib/cms'
+import { getBooksWithPagination } from '@/lib/cms'
 import { getGenres } from '@/lib/services/genre.service'
 import { Book } from '@/types'
 import { BookCard } from './BookCard'
+import { Pagination } from './Pagination'
 import { Grid, List, ChevronDown } from 'lucide-react'
 
 export function CatalogView2D() {
@@ -17,25 +18,47 @@ export function CatalogView2D() {
   const [sortBy, setSortBy] = useState('releaseDate')
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
   const [showGenreDropdown, setShowGenreDropdown] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pagination, setPagination] = useState({
+    total: 0,
+    totalPages: 0,
+    hasNext: false,
+    hasPrev: false
+  })
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const itemsPerPage = 12
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [booksData, genresData] = await Promise.all([
-          getBooks(),
-          getGenres()
-        ])
-        setBooks(booksData)
-        setGenres(genresData)
-      } catch (error) {
-        console.error('Error loading data:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
     loadData()
-  }, [])
+  }, [currentPage, selectedGenre])
+  
+  async function loadData() {
+    try {
+      setLoading(true)
+      
+      // Cargar géneros solo la primera vez
+      if (genres.length === 0) {
+        const genresData = await getGenres()
+        setGenres(genresData)
+      }
+      
+      // Construir filtros
+      const filters: any = {}
+      if (selectedGenre) {
+        filters.genre = selectedGenre
+      }
+      
+      // Cargar libros con paginación
+      const result = await getBooksWithPagination(currentPage, itemsPerPage, filters)
+      
+      setBooks(result.books)
+      setPagination(result.pagination)
+    } catch (error) {
+      console.error('Error loading data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Cerrar dropdown cuando se hace clic fuera
   useEffect(() => {
@@ -51,16 +74,14 @@ export function CatalogView2D() {
     }
   }, [])
 
-  // Filtrar libros
-  const filteredBooks = books.filter((book) => {
-    if (selectedGenre) {
-      return book.categories.includes(selectedGenre)
-    }
-    return true
-  })
-
-  // Ordenar libros
-  const sortedBooks = [...filteredBooks].sort((a, b) => {
+  // Paginar los libros localmente (porque los triplicamos)
+  const paginatedBooks = books.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+  
+  // Ordenar libros paginados
+  const sortedBooks = [...paginatedBooks].sort((a, b) => {
     switch (sortBy) {
       case 'releaseDate':
         return new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime()
@@ -74,6 +95,17 @@ export function CatalogView2D() {
         return 0
     }
   })
+  
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+  
+  const handleGenreChange = (genre: string | null) => {
+    setSelectedGenre(genre)
+    setCurrentPage(1)
+    setShowGenreDropdown(false)
+  }
 
   if (loading) {
     return (
@@ -116,10 +148,7 @@ export function CatalogView2D() {
               {showGenreDropdown && (
                 <div className="absolute top-full mt-2 w-64 max-h-96 overflow-y-auto bg-card rounded-lg shadow-lg border z-50">
                   <button
-                    onClick={() => {
-                      setSelectedGenre(null)
-                      setShowGenreDropdown(false)
-                    }}
+                    onClick={() => handleGenreChange(null)}
                     className="w-full text-left px-4 py-2 hover:bg-accent transition-colors text-sm"
                   >
                     Todos los géneros
@@ -127,10 +156,7 @@ export function CatalogView2D() {
                   {genres.map((genre) => (
                     <button
                       key={genre.id || genre._id}
-                      onClick={() => {
-                        setSelectedGenre(genre.name)
-                        setShowGenreDropdown(false)
-                      }}
+                      onClick={() => handleGenreChange(genre.name)}
                       className="w-full text-left px-4 py-2 hover:bg-accent transition-colors flex items-center gap-2 text-sm"
                     >
                       {genre.icon && <span>{genre.icon}</span>}
@@ -176,7 +202,7 @@ export function CatalogView2D() {
 
         {/* Resultados */}
         <div className="mb-4 text-sm text-muted-foreground">
-          Mostrando {sortedBooks.length} de {books.length} libros
+          Mostrando {paginatedBooks.length} de {pagination.total} libros
         </div>
 
         {/* Grid/List de libros */}
@@ -199,6 +225,19 @@ export function CatalogView2D() {
             <p className="text-lg text-muted-foreground">
               No se encontraron libros con los filtros seleccionados.
             </p>
+          </div>
+        )}
+        
+        {/* Paginación */}
+        {pagination.totalPages > 1 && (
+          <div className="mt-12">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={handlePageChange}
+              totalItems={pagination.total}
+              itemsPerPage={itemsPerPage}
+            />
           </div>
         )}
       </div>

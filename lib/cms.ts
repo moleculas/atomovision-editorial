@@ -28,7 +28,7 @@ function apiBookToType(book: any): Book {
     authors: [book.author],
     description_md: book.synopsis,
     categories: book.category ? [book.category] : [],
-    tags: book.themes || [],
+    tags: book.tags || [],
     coverImage: {
       url: book.coverImage,
       alt: `Portada de ${book.title}`,
@@ -64,6 +64,7 @@ function apiBookToType(book: any): Book {
     samples: book.preview,
     featured: book.featured,
     rating: book.rating,
+    totalRatings: book.totalRatings,
     pageCount: book.pageCount,
     metaTitle: book.metaTitle,
     metaDescription: book.metaDescription,
@@ -86,6 +87,73 @@ export async function getBooks(): Promise<Book[]> {
   } catch (error) {
     console.error('Error fetching books:', error)
     return []
+  }
+}
+
+export async function getBooksWithPagination(
+  page: number = 1,
+  limit: number = 12,
+  filters?: {
+    genre?: string
+    featured?: boolean
+    search?: string
+  }
+): Promise<{
+  books: Book[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+    hasNext: boolean
+    hasPrev: boolean
+  }
+}> {
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    })
+    
+    if (filters?.genre) params.append('category', filters.genre)
+    if (filters?.featured) params.append('featured', 'true')
+    if (filters?.search) params.append('search', filters.search)
+    
+    const response = await fetch(
+      `${getApiUrl()}/api/public/books?${params.toString()}`,
+      { cache: 'no-store' }
+    )
+    
+    if (!response.ok) {
+      throw new Error('Error al obtener los libros')
+    }
+    
+    const result = await response.json()
+    
+    return {
+      books: result.data.map(apiBookToType),
+      pagination: {
+        page: result.pagination?.page || page,
+        limit: result.pagination?.limit || limit,
+        total: result.pagination?.total || result.count || 0,
+        totalPages: result.pagination?.totalPages || Math.ceil((result.count || 0) / limit),
+        hasNext: result.pagination?.hasNext || false,
+        hasPrev: result.pagination?.hasPrev || false,
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching books with pagination:', error)
+    return {
+      books: [],
+      pagination: {
+        page: 1,
+        limit: limit,
+        total: 0,
+        totalPages: 0,
+        hasNext: false,
+        hasPrev: false,
+      }
+    }
   }
 }
 

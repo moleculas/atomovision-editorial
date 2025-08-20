@@ -13,7 +13,7 @@ function apiBookToType(book: any): BookType {
     authors: [book.author],
     description_md: book.synopsis,
     categories: book.category ? [book.category] : [],
-    tags: book.themes || [],
+    tags: book.tags || [],
     coverImage: {
       url: book.coverImage,
       alt: `Portada de ${book.title}`,
@@ -49,6 +49,7 @@ function apiBookToType(book: any): BookType {
     samples: book.preview,
     featured: book.featured,
     rating: book.rating,
+    totalRatings: book.totalRatings,
     pageCount: book.pageCount,
     metaTitle: book.metaTitle,
     metaDescription: book.metaDescription,

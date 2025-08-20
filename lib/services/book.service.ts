@@ -64,7 +64,9 @@ export interface Book {
     downloads: number
     rating: number
     reviews: number
+    totalRatings: number
   }
+  tags: string[]
   seo?: {
     metaTitle?: string
     metaDescription?: string
@@ -259,6 +261,49 @@ class BookService {
       currency: currency,
     })
     return formatter.format(priceInCents / 100)
+  }
+
+  /**
+   * Votar por un libro
+   */
+  async rateBook(bookId: string, rating: number): Promise<{
+    success: boolean
+    rating: number
+    totalRatings: number
+    userRating: number
+    message: string
+  }> {
+    const response = await fetch(`${this.baseUrl}/${bookId}/rate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ rating }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Error al votar')
+    }
+
+    return await response.json()
+  }
+
+  /**
+   * Verificar si el usuario ya votó un libro
+   */
+  async checkUserRating(bookId: string): Promise<{
+    hasRated: boolean
+    userRating: number | null
+  }> {
+    const response = await fetch(`${this.baseUrl}/${bookId}/rate`)
+
+    if (!response.ok) {
+      console.error('Error al verificar voto')
+      return { hasRated: false, userRating: null }
+    }
+
+    return await response.json()
   }
 }
 

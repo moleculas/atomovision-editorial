@@ -21,6 +21,7 @@ interface BookForm {
   excerpt: string
   pageCount: number
   language: string
+  tags: string[]
   pricing: {
     base: number
     currency: string
@@ -53,6 +54,7 @@ export default function NewBookPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [genres, setGenres] = useState<any[]>([])
+  const [tagInput, setTagInput] = useState('')
   
   const [formData, setFormData] = useState<BookForm>({
     registroAtomoVision: '',
@@ -70,6 +72,7 @@ export default function NewBookPage() {
     excerpt: '',
     pageCount: 0,
     language: 'es',
+    tags: [],
     pricing: {
       base: 999, // 9.99€ en centavos
       currency: 'EUR'
@@ -357,6 +360,73 @@ export default function NewBookPage() {
                   ))}
                 </select>
               </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Etiquetas
+              </label>
+              <input
+                type="text"
+                placeholder="Escribe etiquetas separadas por comas"
+                value={tagInput}
+                onChange={(e) => {
+                  setTagInput(e.target.value)
+                }}
+                onBlur={(e) => {
+                  // Al salir del campo, procesar todas las tags
+                  if (tagInput.trim()) {
+                    const newTags = tagInput.split(',').map(tag => tag.trim()).filter(tag => tag)
+                    const uniqueTags = [...new Set([...formData.tags, ...newTags])]
+                    handleInputChange('tags', uniqueTags)
+                    setTagInput('')
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    if (tagInput.trim()) {
+                      const newTags = tagInput.split(',').map(tag => tag.trim()).filter(tag => tag)
+                      const uniqueTags = [...new Set([...formData.tags, ...newTags])]
+                      handleInputChange('tags', uniqueTags)
+                      setTagInput('')
+                    }
+                  } else if (e.key === ',' && tagInput.trim()) {
+                    e.preventDefault()
+                    const tag = tagInput.trim()
+                    if (tag && !formData.tags.includes(tag)) {
+                      handleInputChange('tags', [...formData.tags, tag])
+                      setTagInput('')
+                    }
+                  }
+                }}
+                className="w-full px-4 py-2 bg-[#faf9f7] border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Palabras clave para facilitar la búsqueda (ej: espacio, aventura, misterio). Separa con comas o presiona Enter.
+              </p>
+              {formData.tags.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {formData.tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                    >
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newTags = formData.tags.filter((_, i) => i !== index)
+                          handleInputChange('tags', newTags)
+                        }}
+                        className="ml-1 text-gray-400 hover:text-gray-600"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

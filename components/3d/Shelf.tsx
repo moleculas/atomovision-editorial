@@ -2,7 +2,6 @@ import { useRef } from 'react'
 import { Box, Text } from '@react-three/drei'
 import { Mesh } from 'three'
 import { BookMesh } from './BookMesh'
-import { mockBooks } from '@/lib/cms'
 
 interface ShelfProps {
   position: [number, number, number]
@@ -13,8 +12,9 @@ interface ShelfProps {
 export function Shelf({ position, rotation, category }: ShelfProps) {
   const shelfRef = useRef<Mesh>(null)
   
-  // Filtrar libros por categoría
-  const books = mockBooks.filter(book => book.categories.includes(category)).slice(0, 5)
+  // Por ahora, no mostraremos libros reales en las estanterías 3D
+  // TODO: Implementar carga asíncrona de libros por categoría
+  const books: any[] = []
 
   return (
     <group position={position} rotation={rotation}>

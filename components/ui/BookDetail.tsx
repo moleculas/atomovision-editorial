@@ -7,6 +7,7 @@ import { Book } from '@/types'
 import { useCartStore } from '@/lib/store'
 import { Star, ShoppingCart, Download, BookOpen, ChevronLeft } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { bookService } from '@/lib/services/book.service'
 
 interface BookDetailProps {
   book: Book
@@ -17,31 +18,52 @@ export function BookDetail({ book }: BookDetailProps) {
   const [userRating, setUserRating] = useState<number | null>(null)
   const [hasRated, setHasRated] = useState(false)
   const [currentRating, setCurrentRating] = useState(book.rating || 0)
-  const addItem = useCartStore((state) => state.addItem)
+  const [totalRatings, setTotalRatings] = useState(book.totalRatings || 0)
+  const [isRating, setIsRating] = useState(false)
+  const { addItem, hasItem } = useCartStore((state) => ({
+    addItem: state.addItem,
+    hasItem: state.hasItem
+  }))
+  
+  // Verificar si el libro ya está en el carrito
+  const isInCart = hasItem(book.id, selectedFormat)
 
   // Verificar si el usuario ya ha votado
   useEffect(() => {
-    const ratedBooks = JSON.parse(localStorage.getItem('ratedBooks') || '{}')
-    if (ratedBooks[book.id]) {
-      setHasRated(true)
-      setUserRating(ratedBooks[book.id])
+    async function checkRating() {
+      try {
+        const result = await bookService.checkUserRating(book.id)
+        if (result.hasRated && result.userRating) {
+          setHasRated(true)
+          setUserRating(result.userRating)
+        }
+      } catch (error) {
+        console.error('Error al verificar voto:', error)
+      }
     }
+    checkRating()
   }, [book.id])
 
-  const handleRating = (rating: number) => {
-    if (hasRated) return
+  const handleRating = async (rating: number) => {
+    if (hasRated || isRating) return
     
-    setUserRating(rating)
-    setHasRated(true)
+    setIsRating(true)
     
-    // Guardar en localStorage
-    const ratedBooks = JSON.parse(localStorage.getItem('ratedBooks') || '{}')
-    ratedBooks[book.id] = rating
-    localStorage.setItem('ratedBooks', JSON.stringify(ratedBooks))
-    
-    // Aquí podrías hacer una llamada a la API para actualizar el rating
-    // Por ahora solo actualizamos visualmente
-    setCurrentRating((currentRating * 10 + rating) / 11) // Simulación simple
+    try {
+      const result = await bookService.rateBook(book.id, rating)
+      
+      setUserRating(rating)
+      setHasRated(true)
+      setCurrentRating(result.rating)
+      setTotalRatings(result.totalRatings)
+      
+      // Ya no necesitamos localStorage, la API maneja la persistencia
+    } catch (error) {
+      console.error('Error al votar:', error)
+      alert('Error al registrar tu voto. Por favor intenta de nuevo.')
+    } finally {
+      setIsRating(false)
+    }
   }
 
   const handleAddToCart = () => {
@@ -110,30 +132,38 @@ export function BookDetail({ book }: BookDetailProps) {
             <p className="text-lg mb-4">Por {book.authors.join(', ')}</p>
 
             {/* Rating interactivo */}
-            <div className="flex items-center gap-2 mb-6">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleRating(i + 1)}
-                    disabled={hasRated}
-                    className={`${hasRated ? 'cursor-default' : 'cursor-pointer hover:scale-110'} transition-transform`}
-                  >
-                    <Star
-                      className={`w-5 h-5 ${
-                        i < Math.floor(currentRating) 
-                          ? 'fill-yellow-400 text-yellow-400' 
-                          : 'text-gray-300'
-                      }`}
-                    />
-                  </button>
-                ))}
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleRating(i + 1)}
+                      disabled={hasRated || isRating}
+                      className={`${hasRated || isRating ? 'cursor-default' : 'cursor-pointer hover:scale-110'} transition-transform`}
+                    >
+                      <Star
+                        className={`w-5 h-5 ${
+                          i < Math.floor(currentRating) 
+                            ? 'fill-yellow-400 text-yellow-400' 
+                            : i < Math.floor(userRating || 0)
+                            ? 'fill-amber-300 text-amber-300'
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {currentRating.toFixed(1)} de 5 ({totalRatings} {totalRatings === 1 ? 'voto' : 'votos'})
+                </span>
               </div>
-              <span className="text-sm text-muted-foreground">
-                {currentRating.toFixed(1)} de 5 estrellas
-              </span>
-              {hasRated && (
-                <span className="text-xs text-muted-foreground">(Ya has votado)</span>
+              {!hasRated ? (
+                <p className="text-sm text-gray-600">
+                  {isRating ? 'Registrando tu voto...' : '¿Qué te pareció este libro?'}
+                </p>
+              ) : (
+                <p className="text-sm text-green-600">¡Gracias por tu valoración!</p>
               )}
             </div>
 
@@ -178,10 +208,24 @@ export function BookDetail({ book }: BookDetailProps) {
             <div className="mb-8">
               <button
                 onClick={handleAddToCart}
-                className="w-full md:w-1/2 flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-semibold"
+                disabled={isInCart}
+                className={`w-full md:w-1/2 flex items-center justify-center gap-2 px-6 py-3 rounded-lg transition-colors font-semibold ${
+                  isInCart 
+                    ? 'bg-gray-300 text-gray-600 cursor-not-allowed' 
+                    : 'bg-primary text-white hover:bg-primary/90'
+                }`}
               >
-                <ShoppingCart className="w-5 h-5" />
-                Añadir al carrito
+                {isInCart ? (
+                  <>
+                    <ShoppingCart className="w-5 h-5" />
+                    Ya en el carrito
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="w-5 h-5" />
+                    Añadir al carrito
+                  </>
+                )}
               </button>
             </div>
 
@@ -210,29 +254,28 @@ export function BookDetail({ book }: BookDetailProps) {
                   <dd className="font-medium">{book.sku}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Disponibilidad</dt>
-                  <dd className={`font-medium ${book.inventory && book.inventory > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {book.inventory && book.inventory > 0 ? `${book.inventory} en stock` : 'Agotado'}
-                  </dd>
+                  <dt className="text-muted-foreground">Licencia</dt>
+                  <dd className="font-medium">Sin DRM - Lee en cualquier dispositivo</dd>
                 </div>
               </dl>
             </div>
 
             {/* Etiquetas */}
-            <div>
-              <h3 className="text-xl font-semibold mb-3">Etiquetas</h3>
-              <div className="flex flex-wrap gap-2">
-                {/* Etiquetas mock temporales */}
-                {['espacio', 'cuántica', 'aventura', 'IA', 'futuro', 'misterio'].map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-3 py-1 bg-accent rounded-full text-sm"
-                  >
-                    {tag}
-                  </span>
-                ))}
+            {book.tags && book.tags.length > 0 && (
+              <div>
+                <h3 className="text-xl font-semibold mb-3">Etiquetas</h3>
+                <div className="flex flex-wrap gap-2">
+                  {book.tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-accent rounded-full text-sm"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </motion.div>
         </div>
 

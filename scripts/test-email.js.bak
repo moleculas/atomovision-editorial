@@ -1,0 +1,18 @@
+// Script de prueba para React Email
+const { renderContactEmail } = require('../lib/email/templates/contact')
+
+const testData = {
+  name: 'Test User',
+  email: 'test@example.com',
+  subject: 'Test Subject',
+  message: 'Este es un mensaje de prueba\nCon múltiples líneas'
+}
+
+try {
+  console.log('Probando renderizado de React Email...')
+  const html = renderContactEmail(testData)
+  console.log('✅ Éxito! HTML generado:')
+  console.log(html.substring(0, 500) + '...')
+} catch (error) {
+  console.error('❌ Error:', error)
+}

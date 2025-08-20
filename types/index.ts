@@ -60,6 +60,7 @@ export interface Book {
   }
   featured: boolean
   rating?: number
+  totalRatings?: number
   pages?: number
   pageCount?: number
   // SEO
@@ -81,6 +82,13 @@ export interface CartItem {
   format: 'ebook' | 'paperback' | 'hardcover'
   quantity: number
   price: number
+  // Información adicional para mostrar en UI
+  title?: string
+  coverImage?: {
+    url: string
+    alt: string
+  }
+  selectedFormat?: string
 }
 
 export interface CheckoutSession {

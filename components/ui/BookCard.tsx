@@ -9,7 +9,14 @@ interface BookCardProps {
 }
 
 export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
-  const addItem = useCartStore((state) => state.addItem)
+  const { addItem, hasItem } = useCartStore((state) => ({
+    addItem: state.addItem,
+    hasItem: state.hasItem
+  }))
+  
+  // Verificar si el libro está en el carrito (asumimos formato ebook por defecto)
+  const format = book.formats.ebook ? 'ebook' : 'paperback'
+  const isInCart = hasItem(book.id, format)
 
   if (viewMode === 'list') {
     return (
@@ -45,10 +52,10 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
               <span className="text-lg font-bold">
                 {(book.price / 100).toFixed(2)} {book.currency}
               </span>
-              {book.rating && (
+              {book.rating !== undefined && (
                 <div className="flex items-center gap-1 mt-1">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm">{book.rating}</span>
+                  <Star className={`w-4 h-4 ${book.rating > 0 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
+                  <span className="text-sm">{book.rating.toFixed(1)}</span>
                 </div>
               )}
             </div>
@@ -63,11 +70,17 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
               </Link>
               <button
                 onClick={() => {
-                  const format = book.formats.ebook ? 'ebook' : 'paperback'
-                  addItem(book, format)
+                  if (!isInCart) {
+                    addItem(book, format)
+                  }
                 }}
-                className="p-2 bg-primary text-white hover:bg-primary/90 rounded-lg transition-colors"
-                aria-label="Añadir al carrito"
+                disabled={isInCart}
+                className={`p-2 rounded-lg transition-colors ${
+                  isInCart
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-primary text-white hover:bg-primary/90'
+                }`}
+                aria-label={isInCart ? "Ya en el carrito" : "Añadir al carrito"}
               >
                 <ShoppingCart className="w-4 h-4" />
               </button>
@@ -113,8 +126,8 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
         
         {/* Rating */}
         <div className="flex items-center gap-1 mb-3">
-          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-          <span className="text-sm">{(Math.random() * 2 + 3).toFixed(1)}</span>
+          <Star className={`w-4 h-4 ${book.rating && book.rating > 0 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
+          <span className="text-sm">{book.rating ? book.rating.toFixed(1) : '0.0'}</span>
         </div>
         
         {/* Price and Actions */}
@@ -132,29 +145,36 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
             </Link>
             <button
               onClick={() => {
-                const format = book.formats.ebook ? 'ebook' : 'paperback'
-                addItem(book, format)
+                if (!isInCart) {
+                  addItem(book, format)
+                }
               }}
-              className="p-2 bg-primary text-white hover:bg-primary/90 rounded-lg transition-colors"
-              aria-label="Añadir al carrito"
+              disabled={isInCart}
+              className={`p-2 rounded-lg transition-colors ${
+                isInCart
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-primary text-white hover:bg-primary/90'
+              }`}
+              aria-label={isInCart ? "Ya en el carrito" : "Añadir al carrito"}
             >
               <ShoppingCart className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Formats */}
-        <div className="flex gap-2 mt-3">
-          {book.formats.ebook && (
-            <span className="text-xs bg-accent px-2 py-1 rounded">eBook</span>
-          )}
-          {book.formats.paperback && (
-            <span className="text-xs bg-accent px-2 py-1 rounded">Tapa blanda</span>
-          )}
-          {book.formats.hardcover && (
-            <span className="text-xs bg-accent px-2 py-1 rounded">Tapa dura</span>
-          )}
-        </div>
+        {/* Tags */}
+        {book.tags && book.tags.length > 0 && (
+          <div className="flex gap-2 mt-3 flex-wrap">
+            {book.tags.slice(0, 3).map((tag, index) => (
+              <span key={index} className="text-xs bg-accent px-2 py-1 rounded">
+                {tag}
+              </span>
+            ))}
+            {book.tags.length > 3 && (
+              <span className="text-xs bg-accent px-2 py-1 rounded">+{book.tags.length - 3}</span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

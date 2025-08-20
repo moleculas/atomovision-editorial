@@ -36,10 +36,7 @@ export async function GET(request: NextRequest) {
       const searchRegex = new RegExp(search, 'i')
       query.$or = [
         { title: searchRegex },
-        { subtitle: searchRegex },
-        { synopsis: searchRegex },
-        { 'authors.name': searchRegex },
-        { 'seo.keywords': searchRegex }
+        { 'authors.name': searchRegex }
       ]
     }
     
@@ -72,6 +69,7 @@ export async function GET(request: NextRequest) {
       synopsis: book.synopsis,
       category: book.genre?.name || '',
       categorySlug: book.genre?.code || '',
+      tags: book.tags || [],
       themes: book.seo?.keywords || [],
       coverImage: book.cover?.original || '/textures/book-cover-1.jpg',
       price: book.pricing?.base || 0,
@@ -88,6 +86,7 @@ export async function GET(request: NextRequest) {
       pageCount: book.pageCount || 0,
       featured: book.featured || false,
       rating: book.stats?.rating || undefined,
+      totalRatings: book.stats?.totalRatings || 0,
       epubFile: book.formats?.epub?.fileUrl,
       preview: book.excerpt,
     }))

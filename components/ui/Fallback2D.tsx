@@ -3,11 +3,12 @@
 import { useEffect, useState, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { getBooks } from '@/lib/cms'
+import { getBooksWithPagination } from '@/lib/cms'
 import { getGenres } from '@/lib/services/genre.service'
 import { Book } from '@/types'
 import { useCartStore } from '@/lib/store'
 import { ShoppingCart, Eye, Star, ChevronDown } from 'lucide-react'
+import { Pagination } from './Pagination'
 
 export function Fallback2D() {
   const [books, setBooks] = useState<Book[]>([])
@@ -16,26 +17,53 @@ export function Fallback2D() {
   const [filter, setFilter] = useState('all')
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
   const [showGenreDropdown, setShowGenreDropdown] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pagination, setPagination] = useState({
+    total: 0,
+    totalPages: 0,
+    hasNext: false,
+    hasPrev: false
+  })
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const addItem = useCartStore((state) => state.addItem)
+  const { addItem, hasItem } = useCartStore((state) => ({
+    addItem: state.addItem,
+    hasItem: state.hasItem
+  }))
+  const itemsPerPage = 12
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [booksData, genresData] = await Promise.all([
-          getBooks(),
-          getGenres()
-        ])
-        setBooks(booksData)
-        setGenres(genresData)
-      } catch (error) {
-        console.error('Error loading data:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
     loadData()
-  }, [])
+  }, [currentPage, selectedGenre, filter])
+  
+  async function loadData() {
+    try {
+      setLoading(true)
+      
+      // Cargar géneros solo la primera vez
+      if (genres.length === 0) {
+        const genresData = await getGenres()
+        setGenres(genresData)
+      }
+      
+      // Construir filtros
+      const filters: any = {}
+      if (selectedGenre) {
+        filters.genre = selectedGenre
+      } else if (filter === 'featured') {
+        filters.featured = true
+      }
+      
+      // Cargar libros con paginación
+      const result = await getBooksWithPagination(currentPage, itemsPerPage, filters)
+      
+      setBooks(result.books)
+      setPagination(result.pagination)
+    } catch (error) {
+      console.error('Error loading data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Cerrar dropdown cuando se hace clic fuera
   useEffect(() => {
@@ -51,17 +79,29 @@ export function Fallback2D() {
     }
   }, [])
 
-  const filteredBooks = books.filter((book) => {
-    // Si hay un género seleccionado, filtrar por género
-    if (selectedGenre) {
-      return book.categories.includes(selectedGenre)
-    }
-    
-    // Si no, aplicar los filtros normales
-    if (filter === 'all') return true
-    if (filter === 'featured') return book.featured
-    return book.categories.includes(filter)
-  })
+  // Paginar los libros localmente (porque los triplicamos)
+  const paginatedBooks = books.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+  
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+  
+  const handleFilterChange = (newFilter: string) => {
+    setFilter(newFilter)
+    setSelectedGenre(null)
+    setCurrentPage(1)
+  }
+  
+  const handleGenreChange = (genre: string | null) => {
+    setSelectedGenre(genre)
+    setFilter('all')
+    setCurrentPage(1)
+    setShowGenreDropdown(false)
+  }
 
   if (loading) {
     return (
@@ -87,10 +127,7 @@ export function Fallback2D() {
           {/* Filters */}
           <div className="flex flex-wrap justify-center gap-2 mb-8">
             <button
-              onClick={() => {
-                setFilter('all')
-                setSelectedGenre(null)
-              }}
+              onClick={() => handleFilterChange('all')}
               className={`px-4 py-2 rounded-lg transition-colors ${
                 filter === 'all' && !selectedGenre
                   ? 'bg-primary text-white'
@@ -100,10 +137,7 @@ export function Fallback2D() {
               Todos
             </button>
             <button
-              onClick={() => {
-                setFilter('featured')
-                setSelectedGenre(null)
-              }}
+              onClick={() => handleFilterChange('featured')}
               className={`px-4 py-2 rounded-lg transition-colors ${
                 filter === 'featured' && !selectedGenre
                   ? 'bg-primary text-white'
@@ -128,11 +162,7 @@ export function Fallback2D() {
               {showGenreDropdown && (
                 <div className="absolute top-full mt-2 w-64 max-h-96 overflow-y-auto bg-card rounded-lg shadow-lg border z-50">
                   <button
-                    onClick={() => {
-                      setSelectedGenre(null)
-                      setFilter('all')
-                      setShowGenreDropdown(false)
-                    }}
+                    onClick={() => handleGenreChange(null)}
                     className="w-full text-left px-4 py-2 hover:bg-accent transition-colors text-sm"
                   >
                     Todos los géneros
@@ -140,11 +170,7 @@ export function Fallback2D() {
                   {genres.map((genre) => (
                     <button
                       key={genre.id || genre._id}
-                      onClick={() => {
-                        setSelectedGenre(genre.name)
-                        setFilter('all')
-                        setShowGenreDropdown(false)
-                      }}
+                      onClick={() => handleGenreChange(genre.name)}
                       className="w-full text-left px-4 py-2 hover:bg-accent transition-colors flex items-center gap-2 text-sm"
                     >
                       {genre.icon && <span>{genre.icon}</span>}
@@ -162,7 +188,11 @@ export function Fallback2D() {
 
         {/* Books Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredBooks.map((book) => (
+          {paginatedBooks.map((book) => {
+            const format = book.formats.ebook ? 'ebook' : 'paperback'
+            const isInCart = hasItem(book.id, format)
+            
+            return (
             <div key={book.id} className="book-card bg-card rounded-lg overflow-hidden shadow-lg">
               {/* Book Cover */}
               <Link href={`/libro/${book.slug}`} className="block relative aspect-[2/3] bg-accent overflow-hidden">
@@ -192,8 +222,8 @@ export function Fallback2D() {
                 
                 {/* Rating */}
                 <div className="flex items-center gap-1 mb-3">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm">{(Math.random() * 2 + 3).toFixed(1)}</span>
+                  <Star className={`w-4 h-4 ${book.rating && book.rating > 0 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
+                  <span className="text-sm">{book.rating ? book.rating.toFixed(1) : '0.0'}</span>
                 </div>
                 
                 {/* Price and Actions */}
@@ -211,37 +241,58 @@ export function Fallback2D() {
                     </Link>
                     <button
                       onClick={() => {
-                        const format = book.formats.ebook ? 'ebook' : 'paperback'
-                        addItem(book, format)
+                        if (!isInCart) {
+                          addItem(book, format)
+                        }
                       }}
-                      className="p-2 bg-primary text-white hover:bg-primary/90 rounded-lg transition-colors"
-                      aria-label="Añadir al carrito"
+                      disabled={isInCart}
+                      className={`p-2 rounded-lg transition-colors ${
+                        isInCart
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : 'bg-primary text-white hover:bg-primary/90'
+                      }`}
+                      aria-label={isInCart ? "Ya en el carrito" : "Añadir al carrito"}
                     >
                       <ShoppingCart className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
 
-                {/* Formats */}
-                <div className="flex gap-2 mt-2">
-                  {book.formats.ebook && (
-                    <span className="text-xs bg-accent px-2 py-1 rounded">eBook</span>
-                  )}
-                  {book.formats.paperback && (
-                    <span className="text-xs bg-accent px-2 py-1 rounded">Tapa blanda</span>
-                  )}
-                  {book.formats.hardcover && (
-                    <span className="text-xs bg-accent px-2 py-1 rounded">Tapa dura</span>
-                  )}
-                </div>
+                {/* Tags */}
+                {book.tags && book.tags.length > 0 && (
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    {book.tags.slice(0, 3).map((tag, index) => (
+                      <span key={index} className="text-xs bg-accent px-2 py-1 rounded">
+                        {tag}
+                      </span>
+                    ))}
+                    {book.tags.length > 3 && (
+                      <span className="text-xs bg-accent px-2 py-1 rounded">+{book.tags.length - 3}</span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
 
-        {filteredBooks.length === 0 && (
+        {paginatedBooks.length === 0 && (
           <div className="text-center py-12">
             <p className="text-lg text-muted-foreground">No se encontraron libros con ese filtro.</p>
+          </div>
+        )}
+        
+        {/* Paginación */}
+        {pagination.totalPages > 1 && (
+          <div className="mt-12">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={handlePageChange}
+              totalItems={pagination.total}
+              itemsPerPage={itemsPerPage}
+            />
           </div>
         )}
       </div>

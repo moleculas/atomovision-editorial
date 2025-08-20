@@ -81,7 +81,11 @@ export interface IBook {
     downloads: number
     rating: number
     reviews: number
+    totalRatings: number
   }
+  
+  // Etiquetas
+  tags: string[]
   
   // SEO
   seo?: {
@@ -269,6 +273,16 @@ const bookSchema = new Schema<IBook>(
         type: Number,
         default: 0,
       },
+      totalRatings: {
+        type: Number,
+        default: 0,
+      },
+    },
+    
+    tags: {
+      type: [String],
+      default: [],
+      trim: true,
     },
     
     seo: {
