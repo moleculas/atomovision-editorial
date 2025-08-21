@@ -86,7 +86,7 @@ export function CheckoutForm() {
           email: formData.email,
           name: formData.name,
           items: items.map(item => ({
-            bookId: item.id,
+            bookId: item.bookId,
             format: item.selectedFormat || 'ebook',
             quantity: item.quantity,
             price: item.price,

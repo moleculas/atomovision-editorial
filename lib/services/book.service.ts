@@ -12,6 +12,7 @@ export interface Book {
     name: string
     code: string
     color?: string
+    icon?: string
   }
   authors: Array<{
     name: string

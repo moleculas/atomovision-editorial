@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import dbConnect from '@/lib/mongodb/client'
+import { connectMongoose } from '@/lib/mongodb/client'
 import Purchase from '@/lib/mongodb/models/Purchase'
 import Book from '@/lib/mongodb/models/Book'
 import { sendPurchaseEmail } from '@/lib/email/purchase-email'
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    await dbConnect()
+    await connectMongoose()
 
     // Manejar diferentes tipos de eventos
     switch (event.type) {

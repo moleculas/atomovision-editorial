@@ -46,7 +46,7 @@ export function generateBookSchema(book: Book) {
       '@type': 'Offer',
       price: (book.price / 100).toFixed(2),
       priceCurrency: book.currency,
-      availability: book.inventory > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      availability: (book.inventory && book.inventory > 0) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       seller: {
         '@type': 'Organization',
         name: 'AtomoVisión',

@@ -7,9 +7,9 @@ export async function loadArchillectFiles(): Promise<string[]> {
     // Importar el archivo listado.js
     const response = await fetch('/constants/listado.js')
     const text = await response.text()
-    
+
     // Extraer el array usando una expresión regular
-    const match = text.match(/const archivos = \[(.*?)\]/s)
+    const match = text.match(/const\s+archivos\s*=\s*\[([\s\S]*?)\]/)
     if (match) {
       // Evaluar el array de forma segura
       const arrayContent = match[1]
@@ -19,7 +19,7 @@ export async function loadArchillectFiles(): Promise<string[]> {
   } catch (error) {
     console.error('Error cargando listado de archivos:', error)
   }
-  
+
   return []
 }
 

@@ -32,7 +32,7 @@ export async function sendEmail({
           
           // Si es una promesa, esperarla
           if (rendered instanceof Promise) {
-            const result = await rendered
+            const result = await rendered as any
             
             if (typeof result === 'object' && result.html) {
               html = result.html
@@ -41,8 +41,8 @@ export async function sendEmail({
             } else {
               throw new Error('Formato de render inesperado después de await')
             }
-          } else if (typeof rendered === 'object' && rendered.html) {
-            html = rendered.html
+          } else if (typeof rendered === 'object' && (rendered as any).html) {
+            html = (rendered as any).html
           } else if (typeof rendered === 'string') {
             html = rendered
           } else {

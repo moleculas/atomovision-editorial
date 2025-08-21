@@ -67,12 +67,6 @@ export default function ContactEmail({
   )
 }
 
-// Función para renderizar el template a HTML string
-export function renderContactEmail(props: ContactEmailProps): string {
-  const ReactDOMServer = require('react-dom/server')
-  return ReactDOMServer.renderToStaticMarkup(<ContactEmail {...props} />)
-}
-
 // Estilos
 const main = {
   backgroundColor: '#f6f9fc',

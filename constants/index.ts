@@ -10,7 +10,7 @@ export const ARCHILLECT_CONFIG = {
   // URL base del repositorio
   BASE_URL: 'https://anomaliagravitatoria.net/repositorio/assets/images/archillect/',
   // URL del proxy PHP (si decides usarlo)
-  PHP_PROXY_URL: 'https://anomaliagravitatoria.net/cors-archillect.php?file=',
+  PHP_PROXY_URL: process.env.NEXT_PUBLIC_ARCHILLECT_PROXY_URL || 'https://anomaliagravitatoria.net/cors-archillect.php?file=',
   
   // Número total de archivos disponibles
   TOTAL_FILES: 36000,

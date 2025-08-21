@@ -1,5 +1,13 @@
-import { mockBooks } from '../lib/cms'
-import { createProduct, createPrice } from '../lib/stripe'
+// import { mockBooks } from '../lib/cms'
+// import { createProduct, createPrice } from '../lib/stripe'
+
+// Script de seed desactualizado - usar MongoDB directamente
+console.log('Este script necesita ser actualizado para usar MongoDB')
+console.log('Usar: npm run seed:genres para cargar los géneros')
+
+export {}
+
+/*
 
 async function seed() {
   console.log('🌱 Iniciando seed de datos...')
@@ -76,3 +84,4 @@ if (require.main === module) {
 }
 
 export { seed }
+*/

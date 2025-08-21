@@ -68,7 +68,7 @@ export function OrbitalRing({
         return (
           <mesh key={i} position={[x, 0, z]}>
             <sphereGeometry args={[0.05]} />
-            <meshBasicMaterial
+            <meshStandardMaterial
               color="#ffffff"
               emissive={color}
               emissiveIntensity={2}

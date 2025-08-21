@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import dbConnect from '@/lib/mongodb/client'
+import { connectMongoose } from '@/lib/mongodb/client'
 import Purchase from '@/lib/mongodb/models/Purchase'
 import Book from '@/lib/mongodb/models/Book'
 import { readFile } from 'fs/promises'
@@ -21,7 +21,7 @@ export async function GET(
       )
     }
 
-    await dbConnect()
+    await connectMongoose()
 
     // Buscar la compra por token
     const purchase = await Purchase.findOne({ 
@@ -83,7 +83,7 @@ export async function GET(
       })
 
       // Retornar el archivo
-      return new NextResponse(fileBuffer, {
+      return new NextResponse(fileBuffer as unknown as BodyInit, {
         status: 200,
         headers,
       })

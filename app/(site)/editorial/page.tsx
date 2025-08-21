@@ -40,7 +40,7 @@ export default function EditorialPage() {
                   Nos inspiramos en la literatura PULP del siglo XX, esa revolución silenciosa que democratizó la narrativa con historias accesibles, viscerales y sin pretensiones elitistas. Como aquellas revistas de papel barato que desafiaron a los guardianes literarios de su época, hoy la IA desafía las nociones tradicionales de creatividad legítima.
                 </p>
                 <p className="text-lg leading-relaxed mb-4">
-                  El PULP fue el laboratorio donde se cocinaron los géneros modernos: ciencia ficción, noir, fantasía heroica, terror cósmico. Era literatura "de quiosco" que resultó ser el semillero de la imaginación contemporánea. En Atomovision, reivindicamos esa tradición: publicamos historias rápidas, emocionantes, que no pretenden ser alta literatura sino entretenimiento puro que hace soñar.
+                  El PULP fue el laboratorio donde se cocinaron los géneros modernos: ciencia ficción, noir, fantasía heroica, terror cósmico. Era literatura &quot;de quiosco&quot; que resultó ser el semillero de la imaginación contemporánea. En Atomovision, reivindicamos esa tradición: publicamos historias rápidas, emocionantes, que no pretenden ser alta literatura sino entretenimiento puro que hace soñar.
                 </p>
               </div>
 
@@ -253,15 +253,15 @@ export default function EditorialPage() {
                     <p className="text-lg leading-relaxed mb-4">
                       El PULP se caracteriza por su escritura ágil, visceral y sin complejos,
                       orientada al entretenimiento puro. Como describió un entusiasta, es
-                      "una topadora: no hay manera de salir indemne" de esa avalancha de
+                      &quot;una topadora: no hay manera de salir indemne&quot; de esa avalancha de
                       sexo, violencia, magia, ciencia descabellada y emociones al límite.
                     </p>
                   </blockquote>
                   <p className="text-lg leading-relaxed mb-4">
                     Esta genealogía revela sorprendentes paralelismos con nuestra era
                     algorítmica. Así como el papel barato de pulpa de madera desafió los
-                    "glossies" elitistas, la inteligencia artificial desafía ahora los
-                    guardianes autodesignados de la creatividad "legítima". La IA, como el
+                    &quot;glossies&quot; elitistas, la inteligencia artificial desafía ahora los
+                    guardianes autodesignados de la creatividad &quot;legítima&quot;. La IA, como el
                     PULP, es disruptiva, prolífica y profundamente democratizadora.
                   </p>
                   <p className="text-lg leading-relaxed mb-4">
@@ -363,7 +363,7 @@ export default function EditorialPage() {
                     fragmentos de su entrenamiento. A través de procesos de abstracción y
                     generalización, desarrollan representaciones internas que les permiten
                     generar contenido genuinamente nuevo. Cuando una IA escribe sobre un
-                    "dragón cyberpunk que hackea realidades", no está recuperando esa frase
+                    &quot;dragón cyberpunk que hackea realidades&quot;, no está recuperando esa frase
                     específica de su memoria sino sintetizando conceptos dispares en una
                     amalgama original.
                   </p>
@@ -449,8 +449,8 @@ export default function EditorialPage() {
                     El acto de trabajar con IA para crear narrativas tiene más en común con
                     prácticas chamánicas antiguas que con la programación tradicional. El
                     prompt engineer moderno, como el chamán, debe aprender a comunicarse con
-                    entidades no-humanas, debe desarrollar intuición sobre qué "palabras
-                    mágicas" evocarán las respuestas deseadas.
+                    entidades no-humanas, debe desarrollar intuición sobre qué &quot;palabras
+                    mágicas&quot; evocarán las respuestas deseadas.
                   </p>
                   <p className="text-lg leading-relaxed mb-4">
                     No es coincidencia que el lenguaje de la computación esté saturado de
@@ -515,7 +515,7 @@ export default function EditorialPage() {
                     abierto, dirigiendo sin sofocar, guiando sin controlar excesivamente.
                   </p>
                   <p className="text-lg leading-relaxed mb-4">
-                    Los practicantes más hábiles desarrollan sus propios "grimorios" -
+                    Los practicantes más hábiles desarrollan sus propios &quot;grimorios&quot; -
                     colecciones de prompts efectivos, técnicas probadas, incantaciones
                     digitales que consistentemente evocan resultados poderosos. Estos
                     grimorios modernos son tan guardados y refinados como cualquier libro de
@@ -637,7 +637,7 @@ export default function EditorialPage() {
                   <p className="text-lg leading-relaxed mb-4">
                     La literatura generada por IA tiene cualidades estéticas distintivas que
                     la separan de la ficción puramente humana. Una de las más notables es lo
-                    que llamamos "complejidad dinámica" - la capacidad de mantener múltiples
+                    que llamamos &quot;complejidad dinámica&quot; - la capacidad de mantener múltiples
                     hilos narrativos y niveles de significado sin colapsar en caos o
                     simplificación excesiva.
                   </p>

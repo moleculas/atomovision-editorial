@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import dbConnect from '@/lib/mongodb/client'
+import { connectMongoose } from '@/lib/mongodb/client'
 import Purchase from '@/lib/mongodb/models/Purchase'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    await dbConnect()
+    await connectMongoose()
 
     // Buscar la compra por el session ID
     const purchase = await Purchase.findOne({ stripeSessionId: sessionId })

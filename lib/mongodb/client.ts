@@ -1,4 +1,4 @@
-import { MongoClient, Db, Collection } from 'mongodb'
+import { MongoClient, Db, Collection, Document } from 'mongodb'
 import mongoose from 'mongoose'
 
 if (!process.env.MONGODB_URI) {
@@ -15,7 +15,7 @@ let clientPromise: Promise<MongoClient>
 if (process.env.NODE_ENV === 'development') {
   // En desarrollo, usamos una variable global para preservar el valor
   // a través de recargas de módulos causadas por HMR (Hot Module Replacement).
-  let globalWithMongo = global as typeof globalThis & {
+  const globalWithMongo = global as typeof globalThis & {
     _mongoClientPromise?: Promise<MongoClient>
   }
 
@@ -31,7 +31,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Para Mongoose
-let cached = global as typeof globalThis & {
+const cached = global as typeof globalThis & {
   mongoose?: {
     conn: typeof mongoose | null
     promise: Promise<typeof mongoose> | null
@@ -78,7 +78,7 @@ export async function getDatabase(): Promise<Db> {
 }
 
 // Helper para obtener una colección
-export async function getCollection<T>(name: string): Promise<Collection<T>> {
+export async function getCollection<T extends Document>(name: string): Promise<Collection<T>> {
   const db = await getDatabase()
   return db.collection<T>(name)
 }

@@ -1,8 +1,8 @@
-import { getGPUTier } from 'detect-gpu'
+import { getGPUTier, TierResult } from 'detect-gpu'
 
 export interface GPUTierResult {
   tier: number
-  type: 'BENCHMARK' | 'WEBGL_FALLBACK' | 'OVERRIDE'
+  type: 'BENCHMARK' | 'WEBGL_FALLBACK' | 'OVERRIDE' | 'SSR'
   isMobile: boolean
   gpu?: string
 }
@@ -14,8 +14,8 @@ export async function detectGPU(): Promise<GPUTierResult> {
   
   try {
     const gpuTier = await getGPUTier()
-    cachedGPUTier = gpuTier
-    return gpuTier
+    cachedGPUTier = gpuTier as GPUTierResult
+    return gpuTier as GPUTierResult
   } catch (error) {
     console.error('Error detecting GPU:', error)
     // Fallback para cuando falla la detección

@@ -152,13 +152,19 @@ export default function NewBookPage() {
   }
   
   const handleNestedChange = (parent: string, field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [parent]: {
-        ...prev[parent as keyof BookForm],
-        [field]: value
+    setFormData(prev => {
+      const parentValue = prev[parent as keyof BookForm]
+      if (typeof parentValue === 'object' && parentValue !== null && !Array.isArray(parentValue)) {
+        return {
+          ...prev,
+          [parent]: {
+            ...parentValue,
+            [field]: value
+          }
+        }
       }
-    }))
+      return prev
+    })
   }
   
   const handleAuthorChange = (index: number, field: string, value: string) => {

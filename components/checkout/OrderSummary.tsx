@@ -24,7 +24,7 @@ export function OrderSummary() {
         <>
           <div className="space-y-4 mb-6">
             {items.map((item, index) => (
-              <div key={item.id || `item-${index}`} className="flex gap-4">
+              <div key={item.bookId || `item-${index}`} className="flex gap-4">
                 {/* Imagen */}
                 <div className="w-16 h-24 flex-shrink-0">
                   {item.coverImage?.url ? (

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/lib/store'
-import { getBooksMock } from '@/lib/cms'
+import { getBooks } from '@/lib/cms'
 import { Book } from '@/types'
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react'
 import { loadStripe } from '@stripe/stripe-js'
@@ -19,7 +19,7 @@ export default function CartPage() {
 
   useEffect(() => {
     async function loadBooks() {
-      const data = await getBooksMock()
+      const data = await getBooks()
       setBooks(data)
     }
     loadBooks()

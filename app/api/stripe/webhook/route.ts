@@ -53,9 +53,5 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Configurar la ruta para recibir el body como texto raw
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-}
+// En Next.js 14 con App Router, el body parser se maneja automáticamente
+// No necesitamos configuración adicional

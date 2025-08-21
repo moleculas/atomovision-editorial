@@ -75,7 +75,7 @@ function ArchillectSphere({ onFirstTextureLoaded }: { onFirstTextureLoaded: (loa
     }
     
     // Clonar la textura para evitar que desaparezca del átomo original
-    let textureToShare = null
+    let textureToShare: THREE.Texture | undefined = undefined
     if (currentTexture) {
       textureToShare = currentTexture.clone()
       textureToShare.needsUpdate = true
@@ -352,7 +352,8 @@ function OrbitingSphere({ position, radius, color, orbitRadius, orbitSpeed, phas
         const object = intersect.object
         
         // Identificar la esfera principal por su geometría
-        if (object.geometry && 
+        if (object instanceof THREE.Mesh && 
+            object.geometry && 
             object.geometry.type === 'SphereGeometry' && 
             (object.geometry as any).parameters.radius === SCENE_CONFIG.SPHERE_RADIUS) {
           mainSphereDistance = intersect.distance

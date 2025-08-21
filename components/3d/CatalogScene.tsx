@@ -214,7 +214,7 @@ function MolecularCluster({ texture }: { texture?: THREE.Texture | null }) {
             sphere={sphere}
             isHovered={isHovered}
             texture={texture}
-            onPointerOver={(e) => handlePointerOver(e, sphere.id)}
+            onPointerOver={(e: any) => handlePointerOver(e, sphere.id)}
             onPointerOut={handlePointerOut}
           />
         )

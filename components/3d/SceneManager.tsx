@@ -15,8 +15,13 @@ function SceneWrapper({ children, isActive }: { children: React.ReactNode, isAct
       visible={isActive}
       traverse={(child) => {
         // Desactivar eventos de pointer en todos los hijos cuando no está activo
-        if ('onPointerOver' in child || 'onPointerOut' in child || 'onClick' in child) {
-          child.raycast = isActive ? child.raycast : () => {}
+        if (child instanceof THREE.Object3D && 'raycast' in child) {
+          // Guardar el raycast original si no lo hemos guardado
+          if (!child.userData.originalRaycast) {
+            child.userData.originalRaycast = child.raycast
+          }
+          // Desactivar o restaurar raycast según el estado
+          (child as any).raycast = isActive ? child.userData.originalRaycast : () => {}
         }
       }}
     >
