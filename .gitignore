@@ -23,9 +23,21 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Local env files
-.env*.local
+# Local env files - IMPORTANTE: No subir nunca archivos con credenciales
 .env
+.env.local
+.env.production
+.env.production.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env*.local
+# Solo permitir el archivo de ejemplo sin credenciales
+!.env.example
+
+# Archivo problemático específico
+.env.production.example
 
 # Vercel
 .vercel
