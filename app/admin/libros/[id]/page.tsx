@@ -60,6 +60,8 @@ export default function EditBookPage() {
   const [genres, setGenres] = useState<any[]>([])
   const [tagInput, setTagInput] = useState('')
   
+  const [dataReady, setDataReady] = useState(false)
+  
   const [formData, setFormData] = useState<BookForm>({
     registroAtomoVision: '',
     title: '',
@@ -133,22 +135,18 @@ export default function EditBookPage() {
       if (data.success) {
         const book = data.data
         
-        // Mapear los datos del libro al formulario
-        const genreId = book.genre ? (typeof book.genre === 'object' ? book.genre._id : book.genre) : '';
-        
-        // Asegurar que el género coincida con uno de los disponibles
-        const genreValue = genres.find(g => 
-          g._id === genreId || 
-          g._id.toString() === genreId || 
-          g._id === genreId.toString() ||
-          g._id.toString() === genreId.toString()
-        )?._id?.toString() || genreId.toString();
+        // DEBUG EN PRODUCCIÓN
+        console.log('DEBUG GENRE:', {
+          bookGenre: book.genre,
+          bookGenreId: book.genre?._id,
+          genresAvailable: genres.map(g => ({ id: g._id, name: g.name }))
+        })
         
         setFormData({
           registroAtomoVision: book.registroAtomoVision || '',
           title: book.title || '',
           subtitle: book.subtitle || '',
-          genre: genreValue,
+          genre: book.genre ? (typeof book.genre === 'object' ? book.genre._id : book.genre) : '',
           authors: book.authors || [{
             name: '',
             role: 'author',
@@ -187,6 +185,7 @@ export default function EditBookPage() {
             coverPrompt: book.aiGeneration?.coverPrompt || ''
           }
         })
+        setDataReady(true)
       } else {
         setError('Error al cargar el libro')
       }
@@ -346,7 +345,7 @@ export default function EditBookPage() {
               >
                 <option value="">Seleccionar género...</option>
                 {genres.map((genre) => (
-                  <option key={genre._id} value={genre._id.toString()}>
+                  <option key={genre._id} value={genre._id}>
                   {genre.icon} {genre.name}
                   </option>
                 ))}
