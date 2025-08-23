@@ -134,7 +134,7 @@ export default function EditBookPage() {
           registroAtomoVision: book.registroAtomoVision || '',
           title: book.title || '',
           subtitle: book.subtitle || '',
-          genre: typeof book.genre === 'object' ? book.genre._id : book.genre,
+          genre: book.genre ? (typeof book.genre === 'object' ? book.genre._id : book.genre) : '',
           authors: book.authors || [{
             name: '',
             role: 'author',
