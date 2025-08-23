@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
               format: item.format,
             },
           },
-          unit_amount: book.price, // Stripe espera el precio en centimos
+          unit_amount: Math.round(book.price * 100), // Convertir euros a centavos
         },
         quantity: item.quantity,
       }
@@ -68,12 +68,12 @@ export async function POST(request: NextRequest) {
           book: item.bookId,
           format: item.format,
           quantity: item.quantity,
-          price: book?.price || 0,
+          price: Math.round((book?.price || 0) * 100), // Guardar en centavos
         }
       }),
       totalAmount: items.reduce((total: number, item: any) => {
         const book = books.find(b => b._id.toString() === item.bookId)
-        return total + (book?.price || 0) * item.quantity
+        return total + Math.round((book?.price || 0) * 100) * item.quantity
       }, 0),
       status: 'pending',
       downloadToken,
