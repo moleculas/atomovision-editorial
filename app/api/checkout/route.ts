@@ -10,8 +10,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 })
 
 export async function POST(request: NextRequest) {
+  console.log('=== CHECKOUT API INICIADO ===')
+  
   try {
-    const { email, name, items } = await request.json()
+    const body = await request.json()
+    console.log('1. Body recibido:', JSON.stringify(body, null, 2))
+    
+    const { email, name, items } = body
 
     if (!email || !items || items.length === 0) {
       return NextResponse.json(
@@ -20,11 +25,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    console.log('2. Conectando a MongoDB...')
     await connectMongoose()
+    console.log('3. MongoDB conectado')
 
     // Obtener información de los libros
     const bookIds = items.map((item: any) => item.bookId)
+    console.log('4. IDs de libros a buscar:', bookIds)
+    
     const books = await Book.find({ _id: { $in: bookIds } })
+    console.log('5. Libros encontrados:', books.length)
+    console.log('6. Detalles libros:', books.map(b => ({ id: b._id, title: b.title, price: b.price })))
 
     if (books.length !== items.length) {
       return NextResponse.json(
@@ -34,6 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Crear line items para Stripe
+    console.log('7. Creando line items para Stripe...')
     const lineItems = items.map((item: any) => {
       const book = books.find(b => b._id.toString() === item.bookId)
       if (!book) throw new Error('Libro no encontrado')
@@ -54,6 +66,8 @@ export async function POST(request: NextRequest) {
         quantity: item.quantity,
       }
     })
+    console.log('12. Sesión de Stripe creada:', session.id)
+    console.log('8. Line items creados:', JSON.stringify(lineItems, null, 2))
 
     // Generar token de descarga
     const downloadToken = crypto.randomBytes(32).toString('hex')
@@ -81,6 +95,10 @@ export async function POST(request: NextRequest) {
     })
 
     // Crear sesión de Stripe Checkout
+    console.log('9. Creando sesión de Stripe...')
+    console.log('10. STRIPE_SECRET_KEY existe:', !!process.env.STRIPE_SECRET_KEY)
+    console.log('11. NEXT_PUBLIC_SITE_URL:', process.env.NEXT_PUBLIC_SITE_URL)
+    
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       customer_email: email,
@@ -100,7 +118,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ sessionId: session.id })
   } catch (error) {
-    console.error('Error en checkout:', error)
+    console.error('=== ERROR EN CHECKOUT ===')
+    console.error('Tipo de error:', error instanceof Error ? error.constructor.name : typeof error)
+    console.error('Mensaje:', error instanceof Error ? error.message : 'Sin mensaje')
+    console.error('Stack:', error instanceof Error ? error.stack : 'Sin stack')
+    console.error('Error completo:', JSON.stringify(error, null, 2))
+    
     return NextResponse.json(
       { error: 'Error al procesar el pedido' },
       { status: 500 }
