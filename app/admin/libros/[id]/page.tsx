@@ -101,8 +101,12 @@ export default function EditBookPage() {
   })
   
   useEffect(() => {
-    fetchGenres()
-    fetchBook()
+    // Primero cargar géneros, luego el libro
+    const loadData = async () => {
+      await fetchGenres()  // Esperar a que terminen los géneros
+      await fetchBook()    // Luego cargar el libro
+    }
+    loadData()
   }, [bookId])
   
   const fetchGenres = async () => {
