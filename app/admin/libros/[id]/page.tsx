@@ -138,7 +138,7 @@ export default function EditBookPage() {
           registroAtomoVision: book.registroAtomoVision || '',
           title: book.title || '',
           subtitle: book.subtitle || '',
-          genre: book.genre ? (typeof book.genre === 'object' ? book.genre._id : book.genre) : '',
+          genre: book.genre ? (typeof book.genre === 'object' ? book.genre._id.toString() : book.genre.toString()) : '',
           authors: book.authors || [{
             name: '',
             role: 'author',
@@ -336,8 +336,8 @@ export default function EditBookPage() {
               >
                 <option value="">Seleccionar género...</option>
                 {genres.map((genre) => (
-                  <option key={genre._id} value={genre._id}>
-                    {genre.icon} {genre.name}
+                  <option key={genre._id} value={genre._id.toString()}>
+                  {genre.icon} {genre.name}
                   </option>
                 ))}
               </select>
