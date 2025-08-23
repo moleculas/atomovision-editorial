@@ -105,11 +105,18 @@ export default function EditBookPage() {
   useEffect(() => {
     // Primero cargar géneros, luego el libro
     const loadData = async () => {
-      await fetchGenres()  // Esperar a que terminen los géneros
-      await fetchBook()    // Luego cargar el libro
+      await fetchGenres()  // Solo cargar géneros
+      // El libro se cargará automáticamente por el otro useEffect
     }
     loadData()
   }, [bookId])
+  
+  // Cargar el libro cuando los géneros estén listos
+  useEffect(() => {
+    if (genres.length > 0 && bookId) {
+      fetchBook()
+    }
+  }, [genres, bookId])
   
   const fetchGenres = async () => {
     try {
@@ -129,6 +136,12 @@ export default function EditBookPage() {
   
   const fetchBook = async () => {
     try {
+      // NO cargar el libro si no hay géneros
+      if (genres.length === 0) {
+        console.log('Esperando géneros antes de cargar libro...')
+        return
+      }
+      
       const response = await fetch(`/api/books/${bookId}`)
       const data = await response.json()
       
@@ -136,17 +149,26 @@ export default function EditBookPage() {
         const book = data.data
         
         // DEBUG EN PRODUCCIÓN
-        console.log('DEBUG GENRE:', {
+        console.log('DEBUG LIBRO COMPLETO:', book)
+        console.log('DEBUG GENRE ESPECIFICO:', {
           bookGenre: book.genre,
           bookGenreId: book.genre?._id,
+          bookGenreDirecto: book.genre,
+          tipoGenre: typeof book.genre,
           genresAvailable: genres.map(g => ({ id: g._id, name: g.name }))
         })
+        
+        // Si el libro no tiene género, intentar obtenerlo del libro completo
+        let genreValue = '';
+        if (book.genre) {
+          genreValue = typeof book.genre === 'object' ? book.genre._id : book.genre;
+        }
         
         setFormData({
           registroAtomoVision: book.registroAtomoVision || '',
           title: book.title || '',
           subtitle: book.subtitle || '',
-          genre: book.genre ? (typeof book.genre === 'object' ? book.genre._id : book.genre) : '',
+          genre: genreValue,
           authors: book.authors || [{
             name: '',
             role: 'author',
