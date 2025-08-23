@@ -134,11 +134,21 @@ export default function EditBookPage() {
         const book = data.data
         
         // Mapear los datos del libro al formulario
+        const genreId = book.genre ? (typeof book.genre === 'object' ? book.genre._id : book.genre) : '';
+        
+        // Asegurar que el género coincida con uno de los disponibles
+        const genreValue = genres.find(g => 
+          g._id === genreId || 
+          g._id.toString() === genreId || 
+          g._id === genreId.toString() ||
+          g._id.toString() === genreId.toString()
+        )?._id?.toString() || genreId.toString();
+        
         setFormData({
           registroAtomoVision: book.registroAtomoVision || '',
           title: book.title || '',
           subtitle: book.subtitle || '',
-          genre: book.genre ? (typeof book.genre === 'object' ? book.genre._id.toString() : book.genre.toString()) : '',
+          genre: genreValue,
           authors: book.authors || [{
             name: '',
             role: 'author',
