@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     
     const books = await Book.find({ _id: { $in: bookIds } })
     console.log('5. Libros encontrados:', books.length)
-    console.log('6. Detalles libros:', books.map(b => ({ id: b._id, title: b.title, price: b.price })))
+    console.log('6. Detalles libros:', books.map(b => ({ id: b._id, title: b.title, price: b.pricing?.base })))
 
     if (books.length !== items.length) {
       return NextResponse.json(
@@ -48,7 +48,13 @@ export async function POST(request: NextRequest) {
     console.log('7. Creando line items para Stripe...')
     const lineItems = items.map((item: any) => {
       const book = books.find(b => b._id.toString() === item.bookId)
+      const price = book?.pricing?.base || 0
       if (!book) throw new Error('Libro no encontrado')
+      
+      // Validar que el libro tenga precio
+      if (!book.pricing?.base) {
+        throw new Error(`El libro ${book.title} no tiene precio definido`)
+      }
 
       return {
         price_data: {
@@ -61,7 +67,7 @@ export async function POST(request: NextRequest) {
               format: item.format,
             },
           },
-          unit_amount: Math.round(book.price * 100), // Convertir euros a centavos
+          unit_amount: book.pricing.base, // Ya está en centavos
         },
         quantity: item.quantity,
       }
@@ -77,16 +83,18 @@ export async function POST(request: NextRequest) {
       customerName: name || 'Cliente',
       items: items.map((item: any) => {
         const book = books.find(b => b._id.toString() === item.bookId)
+        const price = book?.pricing?.base || 0
         return {
           book: item.bookId,
           format: item.format,
           quantity: item.quantity,
-          price: Math.round((book?.price || 0) * 100), // Guardar en centavos
+          price: price, // Ya está en centavos
         }
       }),
       totalAmount: items.reduce((total: number, item: any) => {
         const book = books.find(b => b._id.toString() === item.bookId)
-        return total + Math.round((book?.price || 0) * 100) * item.quantity
+        const price = book?.pricing?.base || 0
+        return total + (price * item.quantity)
       }, 0),
       status: 'pending',
       downloadToken,
