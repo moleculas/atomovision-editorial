@@ -13,13 +13,13 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session
-        
+
         // Aquí procesaríamos el pedido completado
         console.log('Payment successful for session:', session.id)
-        
+
         // Marcar pedido como pagado en la base de datos
         // await markOrderAsPaid(session.id)
-        
+
         // Si hay libros digitales, generar enlaces de descarga
         if (session.metadata?.hasEbooks === 'true') {
           // Generar enlaces de descarga temporales
@@ -27,10 +27,10 @@ export async function POST(request: NextRequest) {
           // Enviar email con enlaces
           // await sendDownloadEmail(session.customer_email, downloadLinks)
         }
-        
+
         // Actualizar inventario para libros físicos
         // await updateInventory(session.line_items)
-        
+
         break
 
       case 'payment_intent.payment_failed':
