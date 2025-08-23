@@ -20,6 +20,14 @@ export async function GET(
       .populate('genre', 'name code color icon')
       .lean()
     
+    // Si el populate no funcionó (genre es string), hacer populate manual
+    if (book && typeof book.genre === 'string') {
+      const genre = await Genre.findById(book.genre).lean()
+      if (genre) {
+        book.genre = genre
+      }
+    }
+    
     if (!book) {
       return NextResponse.json(
         {
