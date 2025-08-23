@@ -66,7 +66,6 @@ export async function POST(request: NextRequest) {
         quantity: item.quantity,
       }
     })
-    console.log('12. Sesión de Stripe creada:', session.id)
     console.log('8. Line items creados:', JSON.stringify(lineItems, null, 2))
 
     // Generar token de descarga
@@ -111,6 +110,7 @@ export async function POST(request: NextRequest) {
         downloadToken,
       },
     })
+    console.log('12. Sesión de Stripe creada:', session.id)
 
     // Actualizar la compra con el ID de sesión de Stripe
     purchase.stripeSessionId = session.id
