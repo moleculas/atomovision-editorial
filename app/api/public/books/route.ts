@@ -14,7 +14,9 @@ export async function GET(request: NextRequest) {
     const featured = searchParams.get('featured')
     const category = searchParams.get('category')
     const search = searchParams.get('search')
-    const limit = parseInt(searchParams.get('limit') || '0')
+    const limit = parseInt(searchParams.get('limit') || '12')
+    const page = parseInt(searchParams.get('page') || '1')
+    const skip = (page - 1) * limit
     
     const query: any = { status: 'published' }
     
@@ -40,16 +42,19 @@ export async function GET(request: NextRequest) {
       ]
     }
     
-    let queryBuilder = Book.find(query)
+    // Obtener total de documentos que coinciden con el filtro
+    const total = await Book.countDocuments(query)
+    console.log('Total de libros que coinciden con filtros:', total)
+    
+    // Obtener libros con paginación
+    const books = await Book.find(query)
       .populate('genre')
       .sort({ publishedAt: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean()
     
-    if (limit > 0) {
-      queryBuilder = queryBuilder.limit(limit)
-    }
-    
-    const books = await queryBuilder.lean()
-    console.log('API /api/public/books - Libros encontrados:', books.length)
+    console.log(`API /api/public/books - Página ${page}, mostrando ${books.length} de ${total} libros`)
     
     // Si no hay libros, verificar si hay en la BD sin filtros
     if (books.length === 0) {
@@ -90,11 +95,21 @@ export async function GET(request: NextRequest) {
       epubFile: book.formats?.epub?.fileUrl,
       preview: book.excerpt,
     }))
+    // Calcular páginas totales
+    const totalPages = Math.ceil(total / limit)
     
     return NextResponse.json({
       success: true,
       data: transformedBooks,
-      count: transformedBooks.length
+      count: transformedBooks.length,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
     })
     
   } catch (error) {

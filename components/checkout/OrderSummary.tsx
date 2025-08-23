@@ -90,7 +90,10 @@ export function OrderSummary() {
             )}
             <div className="flex justify-between text-lg font-semibold pt-2 border-t">
               <span>Total</span>
-              <span>{(total / 100).toFixed(2)} €</span>
+              <div className="text-right">
+                <span>{(total / 100).toFixed(2)} €</span>
+                <p className="text-xs text-muted-foreground font-normal">(Impuestos incl.)</p>
+              </div>
             </div>
           </div>
           

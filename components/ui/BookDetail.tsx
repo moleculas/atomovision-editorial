@@ -168,8 +168,11 @@ export function BookDetail({ book }: BookDetailProps) {
             </div>
 
             {/* Precio */}
-            <div className="text-3xl font-bold mb-6">
-              {(book.price / 100).toFixed(2)} {book.currency}
+            <div className="mb-6">
+              <div className="text-3xl font-bold">
+                {(book.price / 100).toFixed(2)} {book.currency}
+              </div>
+              <p className="text-xs text-muted-foreground">(Impuestos incl.)</p>
             </div>
 
             {/* Selección de formato */}

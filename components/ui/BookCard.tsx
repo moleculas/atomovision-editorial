@@ -49,9 +49,12 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
           
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-lg font-bold">
-                {(book.price / 100).toFixed(2)} {book.currency}
-              </span>
+              <div>
+                <span className="text-lg font-bold">
+                  {(book.price / 100).toFixed(2)} {book.currency}
+                </span>
+                <p className="text-xs text-muted-foreground">(Impuestos incl.)</p>
+              </div>
               {book.rating !== undefined && (
                 <div className="flex items-center gap-1 mt-1">
                   <Star className={`w-4 h-4 ${book.rating > 0 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
@@ -132,9 +135,12 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
         
         {/* Price and Actions */}
         <div className="flex items-center justify-between">
-          <span className="text-lg font-bold">
-            {(book.price / 100).toFixed(2)} {book.currency}
-          </span>
+          <div>
+            <span className="text-lg font-bold">
+              {(book.price / 100).toFixed(2)} {book.currency}
+            </span>
+            <p className="text-xs text-muted-foreground">(Impuestos incl.)</p>
+          </div>
           <div className="flex gap-2">
             <Link
               href={`/libro/${book.slug}`}

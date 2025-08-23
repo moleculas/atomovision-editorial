@@ -74,14 +74,11 @@ export function CatalogView2D() {
     }
   }, [])
 
-  // Paginar los libros localmente (porque los triplicamos)
-  const paginatedBooks = books.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  )
+  // No necesitamos paginar localmente porque ya viene paginado del servidor
+  const paginatedBooks = books
   
-  // Ordenar libros paginados
-  const sortedBooks = [...paginatedBooks].sort((a, b) => {
+  // Ordenar libros
+  const sortedBooks = [...books].sort((a, b) => {
     switch (sortBy) {
       case 'releaseDate':
         return new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime()

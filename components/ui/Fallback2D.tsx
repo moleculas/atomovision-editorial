@@ -79,11 +79,8 @@ export function Fallback2D() {
     }
   }, [])
 
-  // Paginar los libros localmente (porque los triplicamos)
-  const paginatedBooks = books.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  )
+  // No necesitamos paginar localmente porque ya viene paginado del servidor
+  const paginatedBooks = books
   
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
