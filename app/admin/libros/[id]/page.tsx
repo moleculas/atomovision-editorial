@@ -138,7 +138,6 @@ export default function EditBookPage() {
     try {
       // NO cargar el libro si no hay géneros
       if (genres.length === 0) {
-        console.log('Esperando géneros antes de cargar libro...')
         return
       }
       
@@ -147,16 +146,6 @@ export default function EditBookPage() {
       
       if (data.success) {
         const book = data.data
-        
-        // DEBUG EN PRODUCCIÓN
-        console.log('DEBUG LIBRO COMPLETO:', book)
-        console.log('DEBUG GENRE ESPECIFICO:', {
-          bookGenre: book.genre,
-          bookGenreId: book.genre?._id,
-          bookGenreDirecto: book.genre,
-          tipoGenre: typeof book.genre,
-          genresAvailable: genres.map(g => ({ id: g._id, name: g.name }))
-        })
         
         // Si el libro no tiene género, intentar obtenerlo del libro completo
         let genreValue = '';
