@@ -15,9 +15,9 @@ export async function GET(
   try {
     await connectMongoose()
     
-    let book = await Book
+    const book = await Book
       .findById(params.id)
-      .lean()
+      .lean() as any
     
     // SIEMPRE hacer populate manual del género
     if (book && book.genre) {
@@ -25,7 +25,7 @@ export async function GET(
       const genre = await Genre.findById(book.genre).lean()
       console.log('[PRODUCCIÓN DEBUG] Género encontrado:', genre)
       if (genre) {
-        book.genre = genre as any
+        book.genre = genre
       }
     }
     

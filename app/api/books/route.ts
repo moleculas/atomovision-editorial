@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     // Hacer populate manual de géneros
     const genreIds = [...new Set(books.map(book => book.genre).filter(Boolean))]
     const genres = await Genre.find({ _id: { $in: genreIds } }).lean()
-    const genresMap = new Map(genres.map(g => [g._id.toString(), g]))
+    const genresMap = new Map(genres.map(g => [(g as any)._id.toString(), g]))
     
     // Asignar géneros a los libros
     const booksWithGenres = books.map(book => {
