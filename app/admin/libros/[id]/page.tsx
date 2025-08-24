@@ -127,8 +127,6 @@ export default function EditBookPage() {
         const sortedGenres = data.data.sort((a: any, b: any) => 
           a.name.localeCompare(b.name, 'es')
         )
-        console.log('[ADMIN DEBUG] Géneros cargados:', sortedGenres.length)
-        console.log('[ADMIN DEBUG] Primeros 3 géneros:', sortedGenres.slice(0, 3).map((g: any) => ({ _id: g._id, name: g.name })))
         setGenres(sortedGenres)
       }
     } catch (error) {
@@ -149,33 +147,24 @@ export default function EditBookPage() {
       if (data.success) {
         const book = data.data
         
-        // Debug del género recibido
-        console.log('[ADMIN DEBUG] Libro recibido:', book.title)
-        console.log('[ADMIN DEBUG] Género recibido - tipo:', typeof book.genre)
-        console.log('[ADMIN DEBUG] Género recibido - valor:', book.genre)
-        
         // Si el libro no tiene género, intentar obtenerlo del libro completo
         let genreValue = '';
         if (book.genre) {
           if (typeof book.genre === 'object' && book.genre._id) {
             genreValue = book.genre._id;
-            console.log('[ADMIN DEBUG] Género es objeto, usando _id:', genreValue)
           } else if (typeof book.genre === 'string') {
             genreValue = book.genre;
-            console.log('[ADMIN DEBUG] Género es string:', genreValue)
-          } else {
-            console.log('[ADMIN DEBUG] Género en formato desconocido')
           }
         }
         
-        console.log('[ADMIN DEBUG] Asignando genreValue al formulario:', genreValue)
-        console.log('[ADMIN DEBUG] Géneros disponibles en select:', genres.map(g => g._id))
+        // Verificar si el género existe en la lista actual
+        const genreExists = genres.some(g => g._id === genreValue)
         
         setFormData({
           registroAtomoVision: book.registroAtomoVision || '',
           title: book.title || '',
           subtitle: book.subtitle || '',
-          genre: genreValue,
+          genre: genreExists ? genreValue : '', // Si el género no existe, dejar vacío
           authors: book.authors || [{
             name: '',
             role: 'author',

@@ -21,9 +21,6 @@ export async function GET(
     
     // SIEMPRE hacer populate manual del género
     if (book && book.genre) {
-      console.log('[PRODUCCIÓN DEBUG] Tipo de book.genre:', typeof book.genre)
-      console.log('[PRODUCCIÓN DEBUG] Valor de book.genre:', book.genre)
-      
       // Intentar diferentes formas de buscar el género
       let genre = null
       
@@ -43,36 +40,22 @@ export async function GET(
         genreId = book.genre._id
       }
       
-      console.log('[PRODUCCIÓN DEBUG] book.genre original:', JSON.stringify(book.genre))
-      console.log('[PRODUCCIÓN DEBUG] genreId procesado:', genreId)
-      
       try {
         // Intento 1: Por ID directo
         genre = await Genre.findById(genreId).lean()
-        console.log('[PRODUCCIÓN DEBUG] Género por findById:', genre ? 'encontrado' : 'no encontrado')
         
         // Si no se encuentra, intentar con _id
         if (!genre) {
           genre = await Genre.findOne({ _id: genreId }).lean()
-          console.log('[PRODUCCIÓN DEBUG] Género por findOne _id:', genre ? 'encontrado' : 'no encontrado')
         }
         
-        // Log del género encontrado
+        // Asignar el género encontrado
         if (genre) {
-          console.log('[PRODUCCIÓN DEBUG] Género completo:', JSON.stringify(genre))
           book.genre = genre
-        } else {
-          console.log('[PRODUCCIÓN DEBUG] No se encontró el género con ID:', genreId)
-          // Buscar todos los géneros para debug
-          const allGenres = await Genre.find({}).select('_id name').lean()
-          console.log('[PRODUCCIÓN DEBUG] Total géneros en BD:', allGenres.length)
-          console.log('[PRODUCCIÓN DEBUG] Primeros 5 IDs:', allGenres.slice(0, 5).map((g: any) => g._id.toString()))
         }
       } catch (genreError) {
-        console.error('[PRODUCCIÓN DEBUG] Error buscando género:', genreError)
+        // Silenciar error
       }
-    } else {
-      console.log('[PRODUCCIÓN DEBUG] Libro sin género asignado')
     }
     
     if (!book) {

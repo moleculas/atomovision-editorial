@@ -24,6 +24,7 @@
     "@sanity/client": "^6.9.3",
     "@sanity/image-url": "^1.0.2",
     "@stripe/stripe-js": "^2.2.0",
+    "date-fns": "^3.6.0",
     "detect-gpu": "^5.0.37",
     "framer-motion": "^10.16.5",
     "jsonwebtoken": "^9.0.2",
