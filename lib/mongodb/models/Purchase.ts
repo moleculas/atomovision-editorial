@@ -160,9 +160,10 @@ const purchaseSchema = new Schema<IPurchase>(
 
 // Índices
 purchaseSchema.index({ email: 1 })
-purchaseSchema.index({ downloadToken: 1 })
-purchaseSchema.index({ stripeSessionId: 1 })
-purchaseSchema.index({ stripePaymentIntentId: 1 })
+// Los siguientes índices ya están definidos en los campos con unique/sparse
+// purchaseSchema.index({ downloadToken: 1 })
+// purchaseSchema.index({ stripeSessionId: 1 })
+// purchaseSchema.index({ stripePaymentIntentId: 1 })
 purchaseSchema.index({ status: 1, createdAt: -1 })
 
 // Método para verificar si puede descargar

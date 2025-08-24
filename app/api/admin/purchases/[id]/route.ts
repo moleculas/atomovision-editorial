@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectMongoose } from '@/lib/mongodb/client'
 import Purchase from '@/lib/mongodb/models/Purchase'
+import { ensureModelsAreRegistered } from '@/lib/mongodb/ensure-models'
 
 export async function GET(
   request: NextRequest,
@@ -10,17 +11,17 @@ export async function GET(
     // TODO: Verificar autenticación de admin
     
     await connectMongoose()
+    ensureModelsAreRegistered() // Asegurar que todos los modelos estén registrados
     
-    const purchase = await Purchase
-      .findById(params.id)
-      .populate({
-        path: 'items.book',
-        populate: {
-          path: 'genre',
-          select: 'name icon color'
-        }
-      })
-      .lean()
+    // Primero intentar sin populate
+    let purchase = null
+    try {
+      purchase = await Purchase
+        .findById(params.id)
+        .lean()
+    } catch (findError) {
+      console.error('Error en findById:', findError)
+    }
     
     if (!purchase) {
       return NextResponse.json(
@@ -32,10 +33,31 @@ export async function GET(
       )
     }
     
-    return NextResponse.json({
-      success: true,
-      data: purchase
-    })
+    // Intentar populate
+    try {
+      const purchaseWithPopulate = await Purchase
+        .findById(params.id)
+        .populate({
+          path: 'items.book',
+          populate: {
+            path: 'genre',
+            select: 'name icon color'
+          }
+        })
+        .lean()
+      
+      return NextResponse.json({
+        success: true,
+        data: purchaseWithPopulate
+      })
+    } catch (populateError) {
+      console.error('Error en populate:', populateError)
+      // Si falla el populate, devolver sin populate
+      return NextResponse.json({
+        success: true,
+        data: purchase
+      })
+    }
     
   } catch (error) {
     console.error('Error al obtener venta:', error)

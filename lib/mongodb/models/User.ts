@@ -121,7 +121,7 @@ const userSchema = new Schema<IUser>(
 )
 
 // Índices
-userSchema.index({ email: 1 })
+// userSchema.index({ email: 1 }) // Ya definido con unique: true en el campo
 userSchema.index({ 'purchases.bookId': 1 })
 userSchema.index({ favorites: 1 })
 

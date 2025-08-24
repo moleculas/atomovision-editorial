@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectMongoose } from '@/lib/mongodb/client'
 import Purchase from '@/lib/mongodb/models/Purchase'
-import Book from '@/lib/mongodb/models/Book'
+import { ensureModelsAreRegistered } from '@/lib/mongodb/ensure-models'
 
 export async function GET(request: NextRequest) {
   try {
     // TODO: Verificar autenticación de admin
     
     await connectMongoose()
+    ensureModelsAreRegistered() // Asegurar que todos los modelos estén registrados
     
     // Obtener todas las compras completadas
     let completedPurchases = []

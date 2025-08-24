@@ -98,7 +98,7 @@ export default function VentaDetailPage() {
     
     setSendingEmail(true)
     try {
-      const response = await fetch(`/api/admin/purchases/${purchaseId}/resend-email`, {
+      const response = await fetch(`/api/admin/purchases-resend-email/${purchaseId}`, {
         method: 'POST'
       })
       const data = await response.json()
@@ -270,7 +270,7 @@ export default function VentaDetailPage() {
                       <p className="text-sm text-gray-600">{item.book.subtitle}</p>
                     )}
                     <p className="text-sm text-gray-500">
-                      {item.book.authors.map(a => a.name).join(', ')}
+                      {item.book.authors?.map(a => a.name).join(', ') || 'Autor desconocido'}
                     </p>
                     {item.book.genre && (
                       <span 
@@ -300,7 +300,7 @@ export default function VentaDetailPage() {
           </div>
 
           {/* Historial de descargas */}
-          {purchase.downloadHistory.length > 0 && (
+          {purchase.downloadHistory && purchase.downloadHistory.length > 0 && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Historial de Descargas</h2>
               <div className="overflow-x-auto">

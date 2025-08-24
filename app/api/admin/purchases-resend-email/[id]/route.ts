@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectMongoose } from '@/lib/mongodb/client'
 import Purchase from '@/lib/mongodb/models/Purchase'
+import { ensureModelsAreRegistered } from '@/lib/mongodb/ensure-models'
 import { sendPurchaseEmail } from '@/lib/email/purchase-email'
 
 export async function POST(
@@ -11,6 +12,7 @@ export async function POST(
     // TODO: Verificar autenticación de admin
     
     await connectMongoose()
+    ensureModelsAreRegistered() // Asegurar que todos los modelos estén registrados
     
     const purchase = await Purchase
       .findById(params.id)

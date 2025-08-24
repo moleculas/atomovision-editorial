@@ -72,20 +72,14 @@ export default function VentasPage() {
 
   const fetchPurchases = async () => {
     try {
-      console.log('[VENTAS DEBUG] Iniciando fetchPurchases...')
       const response = await fetch('/api/admin/purchases')
-      console.log('[VENTAS DEBUG] Response status:', response.status)
       const data = await response.json()
-      console.log('[VENTAS DEBUG] Data recibida:', data)
       
       if (data.success) {
-        console.log('[VENTAS DEBUG] Compras encontradas:', data.data.length)
         setPurchases(data.data)
-      } else {
-        console.log('[VENTAS DEBUG] Error en respuesta:', data.error)
       }
     } catch (error) {
-      console.error('[VENTAS DEBUG] Error cargando ventas:', error)
+      console.error('Error cargando ventas:', error)
     } finally {
       setLoading(false)
     }
