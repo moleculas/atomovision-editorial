@@ -13,7 +13,7 @@ export interface IBook {
   slug: string
   
   // Género (solo uno)
-  genre: mongoose.Types.ObjectId | string
+  genre: string
   
   // Autoría
   authors: Array<{
@@ -148,7 +148,7 @@ const bookSchema = new Schema<IBook>(
     },
     
     genre: {
-      type: Schema.Types.ObjectId,
+      type: String,
       required: true,
       ref: 'Genre',
     },

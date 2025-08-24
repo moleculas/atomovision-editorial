@@ -39,24 +39,36 @@ export async function GET(request: NextRequest) {
       ]
     }
     
-    // Obtener libros
+    // Obtener libros SIN populate
     const [books, total] = await Promise.all([
       Book
         .find(filter)
         .sort(sort)
         .skip(skip)
         .limit(limit)
-        .populate('genre', 'name code color')
         .lean(),
       Book.countDocuments(filter)
     ])
+    
+    // Hacer populate manual de géneros
+    const genreIds = [...new Set(books.map(book => book.genre).filter(Boolean))]
+    const genres = await Genre.find({ _id: { $in: genreIds } }).lean()
+    const genresMap = new Map(genres.map(g => [g._id.toString(), g]))
+    
+    // Asignar géneros a los libros
+    const booksWithGenres = books.map(book => {
+      if (book.genre && genresMap.has(book.genre.toString())) {
+        return { ...book, genre: genresMap.get(book.genre.toString()) }
+      }
+      return book
+    })
     
     // Calcular páginas
     const totalPages = Math.ceil(total / limit)
     
     return NextResponse.json({
       success: true,
-      data: books,
+      data: booksWithGenres,
       pagination: {
         page,
         limit,

@@ -15,16 +15,17 @@ export async function GET(
   try {
     await connectMongoose()
     
-    const book = await Book
+    let book = await Book
       .findById(params.id)
-      .populate('genre', 'name code color icon')
       .lean()
     
-    // Si el populate no funcionó (genre es string), hacer populate manual
-    if (book && typeof (book as any).genre === 'string') {
-      const genre = await Genre.findById((book as any).genre).lean()
+    // SIEMPRE hacer populate manual del género
+    if (book && book.genre) {
+      console.log('[PRODUCCIÓN DEBUG] Buscando género:', book.genre)
+      const genre = await Genre.findById(book.genre).lean()
+      console.log('[PRODUCCIÓN DEBUG] Género encontrado:', genre)
       if (genre) {
-        (book as any).genre = genre
+        book.genre = genre as any
       }
     }
     
