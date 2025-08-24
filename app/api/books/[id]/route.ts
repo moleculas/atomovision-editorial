@@ -21,10 +21,10 @@ export async function GET(
       .lean()
     
     // Si el populate no funcionó (genre es string), hacer populate manual
-    if (book && typeof book.genre === 'string') {
-      const genre = await Genre.findById(book.genre).lean()
+    if (book && typeof (book as any).genre === 'string') {
+      const genre = await Genre.findById((book as any).genre).lean()
       if (genre) {
-        book.genre = genre
+        (book as any).genre = genre
       }
     }
     
