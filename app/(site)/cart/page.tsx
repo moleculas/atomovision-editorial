@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/lib/store'
 import { getBooks } from '@/lib/cms'
 import { Book } from '@/types'
@@ -12,7 +11,6 @@ import { loadStripe } from '@stripe/stripe-js'
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
 export default function CartPage() {
-  const router = useRouter()
   const { items, removeItem, updateQuantity, getTotalPrice, clearCart } = useCartStore()
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(false)

@@ -22,6 +22,15 @@ const nextConfig = {
     });
     return config;
   },
+  async redirects() {
+    return [
+      {
+        source: '/about',
+        destination: '/editorial',
+        permanent: true, // 301 redirect
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig

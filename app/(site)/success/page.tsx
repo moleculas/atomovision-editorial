@@ -6,11 +6,17 @@ import Link from 'next/link'
 import { CheckCircle, Download, Package } from 'lucide-react'
 import { useCartStore } from '@/lib/store'
 
+interface OrderDetails {
+  orderNumber: string
+  email: string
+  hasEbooks: boolean
+  hasPhysicalBooks: boolean
+}
+
 export default function SuccessPage() {
   const searchParams = useSearchParams()
-  const sessionId = searchParams.get('session_id')
   const [loading, setLoading] = useState(true)
-  const [orderDetails, setOrderDetails] = useState<any>(null)
+  const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null)
   const { clearCart } = useCartStore()
 
   useEffect(() => {
@@ -30,7 +36,7 @@ export default function SuccessPage() {
     }, 1000)
   }, [clearCart])
 
-  if (loading) {
+  if (loading || !orderDetails) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
