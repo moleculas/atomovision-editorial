@@ -2,6 +2,7 @@
 
 export interface Genre {
   id: string
+  _id?: string  // MongoDB ID
   name: string
   code: string
   icon?: string
@@ -20,7 +21,17 @@ export async function getGenres(): Promise<Genre[]> {
     }
     
     const { data } = await response.json()
-    return data || []
+    
+    // Mapear los datos para asegurar consistencia
+    return (data || []).map((genre: any) => ({
+      id: genre._id || genre.id,
+      _id: genre._id,
+      name: genre.name || '',
+      code: genre.code || '',
+      icon: genre.icon || '',
+      color: genre.color || '#6495ED',
+      bookCount: genre.bookCount || 0
+    }))
   } catch (error) {
     console.error('Error fetching genres:', error)
     return []

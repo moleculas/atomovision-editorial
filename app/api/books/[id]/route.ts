@@ -21,12 +21,58 @@ export async function GET(
     
     // SIEMPRE hacer populate manual del género
     if (book && book.genre) {
-      console.log('[PRODUCCIÓN DEBUG] Buscando género:', book.genre)
-      const genre = await Genre.findById(book.genre).lean()
-      console.log('[PRODUCCIÓN DEBUG] Género encontrado:', genre)
-      if (genre) {
-        book.genre = genre
+      console.log('[PRODUCCIÓN DEBUG] Tipo de book.genre:', typeof book.genre)
+      console.log('[PRODUCCIÓN DEBUG] Valor de book.genre:', book.genre)
+      
+      // Intentar diferentes formas de buscar el género
+      let genre = null
+      
+      // Manejar diferentes formatos de ObjectId
+      let genreId = book.genre
+      
+      // Si es un objeto con $oid (formato JSON extendido de MongoDB)
+      if (book.genre && book.genre.$oid) {
+        genreId = book.genre.$oid
       }
+      // Si es un ObjectId con método toString
+      else if (book.genre && book.genre.toString && typeof book.genre.toString === 'function') {
+        genreId = book.genre.toString()
+      }
+      // Si es un objeto con _id
+      else if (book.genre && book.genre._id) {
+        genreId = book.genre._id
+      }
+      
+      console.log('[PRODUCCIÓN DEBUG] book.genre original:', JSON.stringify(book.genre))
+      console.log('[PRODUCCIÓN DEBUG] genreId procesado:', genreId)
+      
+      try {
+        // Intento 1: Por ID directo
+        genre = await Genre.findById(genreId).lean()
+        console.log('[PRODUCCIÓN DEBUG] Género por findById:', genre ? 'encontrado' : 'no encontrado')
+        
+        // Si no se encuentra, intentar con _id
+        if (!genre) {
+          genre = await Genre.findOne({ _id: genreId }).lean()
+          console.log('[PRODUCCIÓN DEBUG] Género por findOne _id:', genre ? 'encontrado' : 'no encontrado')
+        }
+        
+        // Log del género encontrado
+        if (genre) {
+          console.log('[PRODUCCIÓN DEBUG] Género completo:', JSON.stringify(genre))
+          book.genre = genre
+        } else {
+          console.log('[PRODUCCIÓN DEBUG] No se encontró el género con ID:', genreId)
+          // Buscar todos los géneros para debug
+          const allGenres = await Genre.find({}).select('_id name').lean()
+          console.log('[PRODUCCIÓN DEBUG] Total géneros en BD:', allGenres.length)
+          console.log('[PRODUCCIÓN DEBUG] Primeros 5 IDs:', allGenres.slice(0, 5).map((g: any) => g._id.toString()))
+        }
+      } catch (genreError) {
+        console.error('[PRODUCCIÓN DEBUG] Error buscando género:', genreError)
+      }
+    } else {
+      console.log('[PRODUCCIÓN DEBUG] Libro sin género asignado')
     }
     
     if (!book) {
