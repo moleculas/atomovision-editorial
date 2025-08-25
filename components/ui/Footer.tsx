@@ -113,7 +113,7 @@ export function Footer() {
                 <input
                   type="email"
                   placeholder="Tu email"
-                  className="flex-1 px-3 py-2 bg-accent rounded-l-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="flex-1 px-3 py-2 bg-accent rounded-l-lg text-sm outline-none border-0 focus:outline-none focus:ring-0"
                 />
                 <button
                   type="submit"

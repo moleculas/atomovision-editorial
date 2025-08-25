@@ -575,13 +575,13 @@ export default function EditBookPage() {
               <input
                 type="text"
                 required
-                placeholder="/libros/portadas/mi-libro.jpg"
+                placeholder="mi-libro.jpg"
                 value={formData.cover.original}
                 onChange={(e) => handleNestedChange('cover', 'original', e.target.value)}
                 className="w-full px-4 py-2 bg-[#faf9f7] border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
               />
               <p className="mt-1 text-xs text-gray-500">
-                Sube el archivo a /public/libros/portadas/
+                Solo el nombre del archivo. Súbelo vía FTP a: anomaliagravitatoria.net/atomovision/libros/portadas/
               </p>
             </div>
             
@@ -591,7 +591,7 @@ export default function EditBookPage() {
               </label>
               <input
                 type="text"
-                placeholder="/libros/epubs/mi-libro.epub"
+                placeholder="mi-libro.epub"
                 value={formData.formats.epub?.fileUrl || ''}
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
@@ -606,7 +606,7 @@ export default function EditBookPage() {
                 className="w-full px-4 py-2 bg-[#faf9f7] border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
               />
               <p className="mt-1 text-xs text-gray-500">
-                Sube el archivo a /public/libros/epubs/
+                Solo el nombre del archivo. Súbelo vía FTP a: anomaliagravitatoria.net/atomovision/libros/epubs/
               </p>
             </div>
             

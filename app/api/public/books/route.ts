@@ -64,6 +64,24 @@ export async function GET(request: NextRequest) {
       console.log('Libros en borrador:', draftBooks)
     }
     
+    // Función helper para construir URLs completas
+    const buildFileUrl = (path: string | undefined, type: 'epubs' | 'portadas'): string => {
+      if (!path) return ''
+      const filesBaseUrl = process.env.NEXT_PUBLIC_FILES_BASE_URL || 'https://anomaliagravitatoria.net/atomovision'
+      
+      // Si ya es una URL completa, devolverla tal cual
+      if (path.startsWith('http://') || path.startsWith('https://')) {
+        return path
+      }
+      
+      // Si es una ruta local o solo el nombre del archivo
+      if (path.startsWith('/')) {
+        return `${filesBaseUrl}${path}`
+      }
+      
+      return `${filesBaseUrl}/${path}`
+    }
+    
     // Transformar los datos para el frontend
     const transformedBooks = books.map((book: any) => ({
       id: book._id.toString(),
@@ -76,7 +94,7 @@ export async function GET(request: NextRequest) {
       categorySlug: book.genre?.code || '',
       tags: book.tags || [],
       themes: book.seo?.keywords || [],
-      coverImage: book.cover?.original || '/textures/book-cover-1.jpg',
+      coverImage: buildFileUrl(book.cover?.original, 'portadas') || '/textures/book-cover-1.jpg',
       price: book.pricing?.base || 0,
       currency: book.pricing?.currency || 'EUR',
       formats: {
@@ -92,7 +110,7 @@ export async function GET(request: NextRequest) {
       featured: book.featured || false,
       rating: book.stats?.rating || undefined,
       totalRatings: book.stats?.totalRatings || 0,
-      epubFile: book.formats?.epub?.fileUrl,
+      epubFile: buildFileUrl(book.formats?.epub?.fileUrl, 'epubs'),
       preview: book.excerpt,
     }))
     // Calcular páginas totales

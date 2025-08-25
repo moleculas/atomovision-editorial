@@ -29,6 +29,24 @@ export async function GET(
     // Castear book a any para evitar problemas de tipos
     const bookData = book as any
     
+    // Función helper para construir URLs completas
+    const buildFileUrl = (path: string | undefined, type: 'epubs' | 'portadas'): string => {
+      if (!path) return ''
+      const filesBaseUrl = process.env.NEXT_PUBLIC_FILES_BASE_URL || 'https://anomaliagravitatoria.net/atomovision'
+      
+      // Si ya es una URL completa, devolverla tal cual
+      if (path.startsWith('http://') || path.startsWith('https://')) {
+        return path
+      }
+      
+      // Si es una ruta local o solo el nombre del archivo
+      if (path.startsWith('/')) {
+        return `${filesBaseUrl}${path}`
+      }
+      
+      return `${filesBaseUrl}/${path}`
+    }
+    
     // Transformar los datos para el frontend
     const transformedBook = {
       id: bookData._id.toString(),
@@ -41,7 +59,7 @@ export async function GET(
       categorySlug: bookData.genre?.code || '',
       tags: bookData.tags || [],
       themes: bookData.seo?.keywords || [],
-      coverImage: bookData.cover?.original || '/textures/book-cover-1.jpg',
+      coverImage: buildFileUrl(bookData.cover?.original, 'portadas') || '/textures/book-cover-1.jpg',
       price: bookData.pricing?.base || 0,
       currency: bookData.pricing?.currency || 'EUR',
       formats: {
@@ -58,15 +76,15 @@ export async function GET(
       featured: bookData.featured || false,
       rating: bookData.stats?.rating || undefined,
       totalRatings: bookData.stats?.totalRatings || 0,
-      epubFile: bookData.formats?.epub?.fileUrl,
-      pdfFile: bookData.formats?.pdf?.fileUrl,
+      epubFile: buildFileUrl(bookData.formats?.epub?.fileUrl, 'epubs'),
+      pdfFile: buildFileUrl(bookData.formats?.pdf?.fileUrl, 'epubs'),
       preview: bookData.excerpt,
       fullDescription: bookData.fullDescription,
       aiTextModel: bookData.aiGeneration?.textModel,
       aiImageModel: bookData.aiGeneration?.coverModel,
       metaTitle: bookData.seo?.metaTitle,
       metaDescription: bookData.seo?.metaDescription,
-      ogImage: bookData.cover?.large || bookData.cover?.original,
+      ogImage: buildFileUrl(bookData.cover?.large || bookData.cover?.original, 'portadas'),
     }
     
     return NextResponse.json({

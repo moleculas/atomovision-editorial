@@ -3,6 +3,27 @@
 
 import { Book as BookType } from '@/types'
 
+// Función helper para construir URLs completas de archivos
+const FILES_BASE_URL = process.env.NEXT_PUBLIC_FILES_BASE_URL || 'https://anomaliagravitatoria.net/atomovision/libros'
+
+function buildFileUrl(path: string | undefined, type: 'epubs' | 'portadas'): string {
+  if (!path) return ''
+  
+  // Si ya es una URL completa, devolverla tal cual
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path
+  }
+  
+  // Si es una ruta local antigua, extraer solo el nombre del archivo
+  if (path.startsWith('/libros/')) {
+    const filename = path.split('/').pop() || ''
+    return `${FILES_BASE_URL}/${type}/${filename}`
+  }
+  
+  // Si es solo el nombre del archivo
+  return `${FILES_BASE_URL}/${type}/${path}`
+}
+
 // Convertir respuesta de API a tipo Book del frontend
 function apiBookToType(book: any): BookType {
   return {
@@ -15,7 +36,7 @@ function apiBookToType(book: any): BookType {
     categories: book.category ? [book.category] : [],
     tags: book.tags || [],
     coverImage: {
-      url: book.coverImage,
+      url: buildFileUrl(book.coverImage, 'portadas'),
       alt: `Portada de ${book.title}`,
       width: 400,
       height: 600,
@@ -25,7 +46,7 @@ function apiBookToType(book: any): BookType {
     currency: book.currency,
     formats: {
       ebook: book.formats?.ebook ? {
-        fileUrl: book.epubFile || '',
+        fileUrl: buildFileUrl(book.epubFile, 'epubs'),
         drm: false,
         pages: book.pages || 0,
       } : undefined,

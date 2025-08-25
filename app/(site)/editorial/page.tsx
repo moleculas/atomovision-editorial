@@ -925,14 +925,8 @@ export default function EditorialPage() {
                 Explora nuestro catálogo. Descubre nuevas formas de contar historias.
                 <br />
                 <span className="text-2xl text-primary">Atomovision: donde experimentamos con la literatura del mañana.</span>
-              </p>
+              </p>             
               
-              <a 
-                href="/catalog" 
-                className="inline-block px-8 py-4 bg-primary text-white text-lg font-bold rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                Explorar el catálogo
-              </a>
             </section>
 
             {/* Botón para volver al resumen */}

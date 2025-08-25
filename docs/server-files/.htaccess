@@ -1,0 +1,68 @@
+# Configuración Apache para archivos de AtomoVisión
+# Colocar este archivo como .htaccess en la carpeta /atomovision/libros/
+
+# Permitir listado de archivos (opcional, solo para debug)
+Options -Indexes
+
+# Configurar tipos MIME correctos
+AddType application/epub+zip .epub
+AddType image/jpeg .jpg
+AddType image/jpeg .jpeg
+AddType image/png .png
+AddType image/webp .webp
+
+# Headers de seguridad y CORS
+<IfModule mod_headers.c>
+    # Permitir acceso desde el dominio de AtomoVisión
+    Header set Access-Control-Allow-Origin "https://www.atomovision.es"
+    Header set Access-Control-Allow-Origin "https://atomovision.es" 
+    Header set Access-Control-Allow-Origin "http://localhost:3000"
+    Header set Access-Control-Allow-Methods "GET, HEAD"
+    Header set Access-Control-Allow-Headers "Content-Type"
+    
+    # Cache para imágenes (30 días)
+    <FilesMatch "\.(jpg|jpeg|png|webp)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+    
+    # Cache para EPUBs (7 días)
+    <FilesMatch "\.epub$">
+        Header set Cache-Control "public, max-age=604800"
+    </FilesMatch>
+    
+    # Seguridad
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+</IfModule>
+
+# Compresión (si está disponible)
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE image/jpeg
+    AddOutputFilterByType DEFLATE image/png
+    AddOutputFilterByType DEFLATE image/webp
+    AddOutputFilterByType DEFLATE application/epub+zip
+</IfModule>
+
+# Proteger archivos del sistema
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Bloquear acceso a archivos de backup
+<FilesMatch "\.(bak|backup|old|orig|tmp)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Redirección 404 personalizada (opcional)
+ErrorDocument 404 "Archivo no encontrado"
+
+# Evitar hotlinking (opcional - descomentar si es necesario)
+# <IfModule mod_rewrite.c>
+#     RewriteEngine on
+#     RewriteCond %{HTTP_REFERER} !^$
+#     RewriteCond %{HTTP_REFERER} !^https?://(www\.)?atomovision\.es [NC]
+#     RewriteCond %{HTTP_REFERER} !^https?://(www\.)?anomaliagravitatoria\.net [NC]
+#     RewriteRule \.(jpg|jpeg|png|webp|epub)$ - [F]
+# </IfModule>
