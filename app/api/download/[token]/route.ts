@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectMongoose } from '@/lib/mongodb/client'
 import Purchase from '@/lib/mongodb/models/Purchase'
 import Book from '@/lib/mongodb/models/Book'
-import { readFile } from 'fs/promises'
-import path from 'path'
 
 export async function GET(
   request: NextRequest,
@@ -58,13 +56,42 @@ export async function GET(
 
     const book = purchaseItem.book
 
-    // Construir la ruta del archivo EPUB
-    const fileName = `${book.slug}.epub`
-    const filePath = path.join(process.cwd(), 'public', 'libros', 'epubs', fileName)
+    // Construir la URL del archivo EPUB desde el servidor externo
+    const filesBaseUrl = process.env.NEXT_PUBLIC_FILES_BASE_URL || 'https://anomaliagravitatoria.net/atomovision'
+    let epubUrl = ''
+    
+    // Construir la URL según el formato guardado en la BD
+    if (book.formats?.epub?.fileUrl) {
+      const fileUrl = book.formats.epub.fileUrl
+      
+      if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
+        // Ya es una URL completa
+        epubUrl = fileUrl
+      } else if (fileUrl.startsWith('/')) {
+        // Es una ruta relativa tipo /libros/epubs/archivo.epub
+        epubUrl = `${filesBaseUrl}${fileUrl}`
+      } else {
+        // Es solo el nombre del archivo
+        epubUrl = `${filesBaseUrl}/libros/epubs/${fileUrl}`
+      }
+    } else {
+      // Fallback: usar el slug
+      epubUrl = `${filesBaseUrl}/libros/epubs/${book.slug}.epub`
+    }
+
+    console.log('URL del EPUB a descargar:', epubUrl)
 
     try {
-      // Leer el archivo
-      const fileBuffer = await readFile(filePath)
+      // Descargar el archivo desde el servidor externo
+      const response = await fetch(epubUrl)
+      
+      if (!response.ok) {
+        console.error('Error descargando archivo:', response.status, response.statusText)
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      // Obtener el archivo como ArrayBuffer
+      const fileBuffer = await response.arrayBuffer()
 
       // Registrar la descarga
       const clientIp = request.headers.get('x-forwarded-for') || 
@@ -78,12 +105,12 @@ export async function GET(
       const headers = new Headers({
         'Content-Type': 'application/epub+zip',
         'Content-Disposition': `attachment; filename="${book.title.replace(/[^a-z0-9]/gi, '_')}.epub"`,
-        'Content-Length': fileBuffer.length.toString(),
+        'Content-Length': fileBuffer.byteLength.toString(),
         'Cache-Control': 'no-cache, no-store, must-revalidate',
       })
 
       // Retornar el archivo
-      return new NextResponse(fileBuffer as unknown as BodyInit, {
+      return new NextResponse(fileBuffer, {
         status: 200,
         headers,
       })
