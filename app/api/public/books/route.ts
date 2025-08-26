@@ -3,12 +3,34 @@ import { connectMongoose } from '@/lib/mongodb/client'
 import Book from '@/lib/mongodb/models/Book'
 import Genre from '@/lib/mongodb/models/Genre'
 
+// Aumentar timeout para evitar problemas de carga
+export const maxDuration = 30 // segundos
+
 export async function GET(request: NextRequest) {
   try {
     console.log('API /api/public/books - Iniciando')
     
-    await connectMongoose()
-    console.log('API /api/public/books - MongoDB conectado')
+    // Intentar conectar con reintentos
+    let connected = false
+    let retries = 3
+    
+    while (!connected && retries > 0) {
+      try {
+        await connectMongoose()
+        connected = true
+        console.log('API /api/public/books - MongoDB conectado')
+      } catch (error) {
+        console.error(`Error conectando a MongoDB, reintento ${4 - retries}/3:`, error)
+        retries--
+        if (retries > 0) {
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+      }
+    }
+    
+    if (!connected) {
+      throw new Error('No se pudo conectar a la base de datos')
+    }
     
     const searchParams = request.nextUrl.searchParams
     const featured = searchParams.get('featured')

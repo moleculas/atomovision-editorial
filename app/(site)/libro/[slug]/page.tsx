@@ -10,15 +10,46 @@ interface Props {
   }
 }
 
+// Función helper para obtener libro con reintentos
+async function getBookWithRetries(slug: string, maxRetries = 3) {
+  let retries = 0
+  let lastError = null
+  
+  while (retries < maxRetries) {
+    try {
+      const book = await getBookBySlug(slug)
+      if (book) return book
+      
+      // Si no hay libro pero no hay error, es un 404 real
+      if (retries === 0) {
+        return null
+      }
+    } catch (error) {
+      console.error(`Error obteniendo libro (intento ${retries + 1}/${maxRetries}):`, error)
+      lastError = error
+    }
+    
+    retries++
+    if (retries < maxRetries) {
+      // Esperar antes de reintentar (backoff exponencial)
+      await new Promise(resolve => setTimeout(resolve, 1000 * retries))
+    }
+  }
+  
+  // Si llegamos aquí, todos los reintentos fallaron
+  console.error('Todos los reintentos fallaron:', lastError)
+  return null
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const book = await getBookBySlug(params.slug)
+  const book = await getBookWithRetries(params.slug)
   if (!book) return {}
   
   return generateBookMetadata(book)
 }
 
 export default async function BookPage({ params }: Props) {
-  const book = await getBookBySlug(params.slug)
+  const book = await getBookWithRetries(params.slug)
 
   if (!book) {
     notFound()

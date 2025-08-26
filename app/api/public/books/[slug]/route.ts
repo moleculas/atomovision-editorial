@@ -2,12 +2,35 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectMongoose } from '@/lib/mongodb/client'
 import Book from '@/lib/mongodb/models/Book'
 
+// Aumentar timeout para evitar 404 intermitentes
+export const maxDuration = 30 // segundos
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
   try {
-    await connectMongoose()
+    // Intentar conectar con reintentos
+    let connected = false
+    let retries = 3
+    
+    while (!connected && retries > 0) {
+      try {
+        await connectMongoose()
+        connected = true
+      } catch (error) {
+        console.error(`Error conectando a MongoDB, reintento ${4 - retries}/3:`, error)
+        retries--
+        if (retries > 0) {
+          // Esperar un poco antes de reintentar
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+      }
+    }
+    
+    if (!connected) {
+      throw new Error('No se pudo conectar a la base de datos')
+    }
     
     const book = await Book.findOne({ 
       slug: params.slug, 
@@ -15,8 +38,18 @@ export async function GET(
     })
       .populate('genre')
       .lean()
+      .maxTimeMS(20000) // Timeout de 20 segundos para la consulta
     
     if (!book) {
+      // Log para debugging
+      console.log(`Libro no encontrado: ${params.slug}`)
+      
+      // Verificar si existe pero no está publicado
+      const draftBook = await Book.findOne({ slug: params.slug }).select('status')
+      if (draftBook) {
+        console.log(`Libro existe pero está en estado: ${draftBook.status}`)
+      }
+      
       return NextResponse.json(
         { 
           success: false, 
