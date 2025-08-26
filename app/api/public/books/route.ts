@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     
     const searchParams = request.nextUrl.searchParams
     const featured = searchParams.get('featured')
-    const category = searchParams.get('category')
+    const genre = searchParams.get('genre')  // Cambiar de category a genre
     const search = searchParams.get('search')
     const limit = parseInt(searchParams.get('limit') || '12')
     const page = parseInt(searchParams.get('page') || '1')
@@ -47,11 +47,11 @@ export async function GET(request: NextRequest) {
       query.featured = true
     }
     
-    // Filtro por categoría
-    if (category) {
-      const genre = await Genre.findOne({ name: category }).lean()
-      if (genre) {
-        query.genre = (genre as any)._id
+    // Filtro por género
+    if (genre) {
+      const genreDoc = await Genre.findOne({ code: genre }).lean()  // Buscar por code
+      if (genreDoc) {
+        query.genre = (genreDoc as any)._id
       }
     }
     

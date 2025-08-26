@@ -115,7 +115,7 @@ export async function getBooksWithPagination(
       limit: limit.toString(),
     })
     
-    if (filters?.genre) params.append('category', filters.genre)
+    if (filters?.genre) params.append('genre', filters.genre)
     if (filters?.featured) params.append('featured', 'true')
     if (filters?.search) params.append('search', filters.search)
     

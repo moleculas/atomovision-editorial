@@ -138,7 +138,7 @@ export function CatalogView2D() {
                     : 'bg-accent hover:bg-accent/80'
                 }`}
               >
-                {selectedGenre ? genres.find(g => g.id === selectedGenre)?.name || 'Género' : 'Género'}
+                {selectedGenre ? genres.find(g => g.code === selectedGenre)?.name || 'Género' : 'Género'}
                 <ChevronDown className={`w-4 h-4 transition-transform ${showGenreDropdown ? 'rotate-180' : ''}`} />
               </button>
               
@@ -153,7 +153,7 @@ export function CatalogView2D() {
                   {genres.map((genre) => (
                     <button
                       key={genre.id || genre._id}
-                      onClick={() => handleGenreChange(genre.id)}
+                      onClick={() => handleGenreChange(genre.code)}
                       className="w-full text-left px-4 py-2 hover:bg-accent transition-colors flex items-center gap-2 text-sm"
                     >
                       {genre.icon && <span>{genre.icon}</span>}
