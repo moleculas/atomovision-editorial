@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectMongoose } from '@/lib/mongodb/client'
 import HomeSettings from '@/lib/mongodb/models/HomeSettings'
+import Book from '@/lib/mongodb/models/Book' // Importante: registrar el modelo Book
 import mongoose from 'mongoose'
+import { ensureModelsAreRegistered } from '@/lib/mongodb/models'
 
 // GET - Obtener configuración de la home
 export async function GET(_request: NextRequest) {
@@ -12,6 +14,9 @@ export async function GET(_request: NextRequest) {
     
     await connectMongoose()
     console.log('[HOME-SETTINGS GET] MongoDB conectado')
+    
+    // Asegurar que todos los modelos estén registrados
+    ensureModelsAreRegistered()
 
     // Buscar la configuración o crear una por defecto
     let settings = await HomeSettings.findOne().populate('featuredBookId')
@@ -46,6 +51,9 @@ export async function PUT(request: NextRequest) {
     
     await connectMongoose()
     console.log('[HOME-SETTINGS PUT] MongoDB conectado')
+    
+    // Asegurar que todos los modelos estén registrados
+    ensureModelsAreRegistered()
     
     const body = await request.json()
     console.log('[HOME-SETTINGS PUT] Body recibido:', JSON.stringify(body))
@@ -88,6 +96,12 @@ export async function PUT(request: NextRequest) {
     }
 
     settings.updatedBy = 'admin'
+    
+    // Asegurarse de que el modelo Book está registrado
+    if (!mongoose.models.Book) {
+      console.log('[HOME-SETTINGS PUT] Registrando modelo Book')
+      // El modelo ya debería estar registrado por el import, pero por si acaso
+    }
     
     console.log('[HOME-SETTINGS PUT] Guardando settings...')
     await settings.save()

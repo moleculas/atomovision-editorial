@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectMongoose } from '@/lib/mongodb/client'
 import HomeSettings from '@/lib/mongodb/models/HomeSettings'
+import { ensureModelsAreRegistered } from '@/lib/mongodb/models'
 
 // Función helper para construir URLs completas
 function buildFileUrl(path: string | undefined, type: 'epubs' | 'portadas'): string {
@@ -62,6 +63,9 @@ function transformBookForFrontend(book: any) {
 export async function GET(request: NextRequest) {
   try {
     await connectMongoose()
+    
+    // Asegurar que todos los modelos estén registrados
+    ensureModelsAreRegistered()
 
     // Buscar la configuración
     const settings = await HomeSettings.findOne()
