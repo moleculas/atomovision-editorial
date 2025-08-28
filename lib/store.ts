@@ -19,11 +19,14 @@ interface UIStore {
   language: Language
   isCartOpen: boolean
   isSearchOpen: boolean
+  isChatOpen: boolean
   setViewMode: (mode: ViewMode) => void
   setPerformanceMode: (mode: PerformanceMode) => void
   setLanguage: (lang: Language) => void
   toggleCart: () => void
   toggleSearch: () => void
+  toggleChat: () => void
+  setIsChatOpen: (isOpen: boolean) => void
 }
 
 interface SceneStore {
@@ -128,17 +131,20 @@ export const useCartStore = create<CartStore>()(
 export const useUIStore = create<UIStore>()(
   persist(
     (set) => ({
-      viewMode: '3d',
+      viewMode: '2d',
       performanceMode: 'medium',
       language: 'es',
       isCartOpen: false,
       isSearchOpen: false,
+      isChatOpen: false,
       
       setViewMode: (mode) => set({ viewMode: mode }),
       setPerformanceMode: (mode) => set({ performanceMode: mode }),
       setLanguage: (lang) => set({ language: lang }),
       toggleCart: () => set((state) => ({ isCartOpen: !state.isCartOpen })),
       toggleSearch: () => set((state) => ({ isSearchOpen: !state.isSearchOpen })),
+      toggleChat: () => set((state) => ({ isChatOpen: !state.isChatOpen })),
+      setIsChatOpen: (isOpen) => set({ isChatOpen: isOpen }),
     }),
     {
       name: 'editorial-ui',

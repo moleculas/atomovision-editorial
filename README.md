@@ -1,11 +1,11 @@
-# AtomoVisión - E-commerce de libros con experiencia inmersiva
+# AtomoVisión - Editorial de libros de fantasía y ciencia ficción generados por IA
 
-Una plataforma de venta de libros digitales y físicos con una experiencia de navegación 3D única, construida con Next.js, React Three Fiber y Stripe.
+Una plataforma editorial innovadora especializada en libros de fantasía y ciencia ficción creados con inteligencia artificial, construida con Next.js, MongoDB y Stripe.
 
 ## 🚀 Características principales
 
-- **Experiencia 3D inmersiva**: Navega por un espacio editorial 3D con estanterías interactivas
-- **Modo 2D fallback**: Interfaz tradicional para dispositivos sin soporte WebGL
+- **Libros generados por IA**: Catálogo único de obras creadas con tecnología de vanguardia
+- **Interfaz moderna**: Experiencia de usuario elegante y minimalista
 - **Rendimiento adaptativo**: Ajuste automático de calidad según las capacidades del dispositivo
 - **Catálogo completo**: Filtros, búsqueda y ordenamiento de libros
 - **Carrito de compra**: Gestión de pedidos con persistencia local

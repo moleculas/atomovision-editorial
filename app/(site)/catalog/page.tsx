@@ -12,17 +12,10 @@ const CatalogView3D = dynamic(() => import('@/components/3d/CatalogView3D').then
 })
 
 export default function CatalogPage() {
-  const viewMode = useUIStore((state) => state.viewMode)
-
+  // Siempre mostrar modo 2D
   return (
     <div className="min-h-screen">
-      {viewMode === '3d' ? (
-        <Suspense fallback={<LoadingScreen />}>
-          <CatalogView3D />
-        </Suspense>
-      ) : (
-        <CatalogView2D />
-      )}
+      <CatalogView2D />
     </div>
   )
 }

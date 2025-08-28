@@ -137,34 +137,6 @@ export function Header() {
 
           {/* Actions */}
           <div className="flex items-center space-x-4">
-            {/* View Mode Toggle */}
-            <div className="hidden md:flex items-center space-x-2 text-sm">
-              <button
-                onClick={() => setViewMode('3d')}
-                className={`px-2 py-1 rounded ${viewMode === '3d' ? 'bg-primary text-white' : 'text-foreground'}`}
-              >
-                3D
-              </button>
-              <button
-                onClick={() => setViewMode('2d')}
-                className={`px-2 py-1 rounded ${viewMode === '2d' ? 'bg-primary text-white' : 'text-foreground'}`}
-              >
-                2D
-              </button>
-            </div>
-
-            {/* Performance Mode */}
-            {viewMode === '3d' && (
-              <select
-                value={performanceMode}
-                onChange={(e) => setPerformanceMode(e.target.value as any)}
-                className="hidden md:block text-sm bg-transparent border rounded px-2 py-1"
-              >
-                <option value="high">Alto</option>
-                <option value="medium">Medio</option>
-                <option value="low">Bajo</option>
-              </select>
-            )}
 
             {/* Search Input */}
             <AnimatePresence>
@@ -323,41 +295,7 @@ export function Header() {
               >
                 Editorial
               </Link>
-              
-              <div className="pt-4 border-t space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Modo de vista</span>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => setViewMode('3d')}
-                      className={`px-3 py-1 rounded text-sm ${viewMode === '3d' ? 'bg-primary text-white' : 'bg-accent'}`}
-                    >
-                      3D
-                    </button>
-                    <button
-                      onClick={() => setViewMode('2d')}
-                      className={`px-3 py-1 rounded text-sm ${viewMode === '2d' ? 'bg-primary text-white' : 'bg-accent'}`}
-                    >
-                      2D
-                    </button>
-                  </div>
-                </div>
-                
-                {viewMode === '3d' && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Rendimiento</span>
-                    <select
-                      value={performanceMode}
-                      onChange={(e) => setPerformanceMode(e.target.value as any)}
-                      className="text-sm bg-accent border rounded px-3 py-1"
-                    >
-                      <option value="high">Alto</option>
-                      <option value="medium">Medio</option>
-                      <option value="low">Bajo</option>
-                    </select>
-                  </div>
-                )}
-              </div>
+
             </nav>
           </motion.div>
         )}

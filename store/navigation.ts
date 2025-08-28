@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import * as THREE from 'three'
 
-type SceneType = 'home' | 'catalog' | 'book-detail' | 'collection'
+type SceneType = 'home' | 'catalog' | 'genres' | 'book-detail' | 'collection'
 
 interface NavigationState {
   currentScene: SceneType
@@ -29,12 +29,17 @@ export const useNavigationStore = create<NavigationState>((set) => ({
   
   startTransition: (to, texture) => {
     console.log('Starting transition to:', to)
-    set((state) => ({
-      previousScene: state.currentScene,
-      isTransitioning: true,
-      transitionProgress: 0.2, // Empezar con 20% para que sea visible
-      sharedTexture: texture || state.sharedTexture,
-    }))
+    console.log('Texture passed:', texture)
+    set((state) => {
+      console.log('Previous sharedTexture:', state.sharedTexture)
+      console.log('Setting new texture:', texture || state.sharedTexture)
+      return {
+        previousScene: state.currentScene,
+        isTransitioning: true,
+        transitionProgress: 0.2, // Empezar con 20% para que sea visible
+        sharedTexture: texture || state.sharedTexture,
+      }
+    })
     
     // Transición RÁPIDA
     let progress = 0.2

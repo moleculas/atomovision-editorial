@@ -6,7 +6,9 @@ import * as THREE from 'three'
 import { useNavigationStore } from '@/store/navigation'
 import { MainScene } from './Scene'
 import { CatalogScene } from './CatalogScene'
+import { GenresScene } from './GenresScene'
 import { SCENE_CONFIG } from '@/constants'
+import { ChatInterface } from '@/components/ui/ChatInterface'
 
 // Componente wrapper para controlar la interactividad
 function SceneWrapper({ children, isActive }: { children: React.ReactNode, isActive: boolean }) {
@@ -63,6 +65,7 @@ export function SceneManager() {
           {/* Renderizar SIEMPRE basado en currentScene, sin importar isTransitioning */}
           {currentScene === 'home' && <MainScene />}
           {currentScene === 'catalog' && <CatalogScene />}
+          {currentScene === 'genres' && <GenresScene />}
         </Suspense>
       </Canvas>
       
@@ -76,6 +79,9 @@ export function SceneManager() {
           }}
         />
       )}
+      
+      {/* Chat del Bibliotecario - Solo visible en la escena del catálogo */}
+      {currentScene === 'catalog' && <ChatInterface />}
 
     </div>
   )

@@ -50,6 +50,12 @@ export default async function AdminLayout({
             >
               💰 Ventas
             </Link>
+            <Link
+              href="/admin/home"
+              className="block px-4 py-2 rounded-lg text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition duration-200"
+            >
+              🏠 Editar Home
+            </Link>
           </nav>
         </aside>
         

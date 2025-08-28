@@ -1,394 +1,438 @@
 'use client'
 
-import React, { useEffect, useRef, useMemo, useState } from 'react'
-import { useThree, useFrame } from '@react-three/fiber'
-import { OrbitControls, Html } from '@react-three/drei'
+import React, { useEffect, useRef, useState } from 'react'
+import { useThree, useFrame, useLoader } from '@react-three/fiber'
+import { OrbitControls, useGLTF, Html } from '@react-three/drei'
 import * as THREE from 'three'
+import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js'
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js'
 import { useNavigationStore } from '@/store/navigation'
 
-// Array de géneros literarios
-const GENEROS_LITERARIOS = [
-  "Ficción especulativa",
-  "Ciencia ficción",
-  "Fantasía",
-  "Ciencia ficción dura",
-  "Ciencia ficción blanda",
-  "Ciencia ficción social",
-  "Space opera",
-  "Space opera militar",
-  "Ciencia ficción militar",
-  "Ciberpunk",
-  "Steampunk",
-  "Biopunk",
-  "Dieselpunk",
-  "Atompunk",
-  "Clockpunk",
-  "Postcyberpunk",
-  "Ucronía",
-  "Ciencia ficción apocalíptica",
-  "Ciencia ficción postapocalíptica",
-  "Mundos moribundos",
-  "Distopía",
-  "Utopía",
-  "Utopías ambiguas",
-  "Viaje en el tiempo",
-  "Ciencia ficción de exploración espacial y colonización",
-  "Primer contacto",
-  "Ciencia ficción antropológica",
-  "Narrativas especulativas",
-  "Ciencia ficción humorística",
-  "Ciencia ficción filosófica",
-  "Slipstream",
-  "Ciencia ficción policíaca",
-  "Ciencia ficción bélica",
-  "Ciencia ficción gótica",
-  "Space western",
-  "Fantasía científica",
-  "Climate fiction",
-  "Solarpunk",
-  "Hopepunk",
-  "Ciencia ficción especulativa",
-  "Alta fantasía",
-  "Fantasía épica",
-  "Fantasía heroica",
-  "Espada y brujería",
-  "Baja fantasía",
-  "Fantasía oscura",
-  "Grimdark",
-  "Fantasía urbana",
-  "Realismo mágico",
-  "Fantasía histórica",
-  "Cuentos de hadas",
-  "Fantasía de hadas",
-  "Fantasía mitológica",
-  "Fantasía de romance paranormal",
-  "Fantasía erótica",
-  "Fantasía cómica",
-  "Fantasía juvenil e infantil",
-  "Noblebright",
-  "New Weird",
-  "Silkpunk",
-  "Fantaterror",
-  "Afro-fantasía",
-  "Afrofantasy",
-  "Xianxia",
-  "Wuxia",
-  "Isekai",
-  "Fantasía asiática",
-  "Fantasía europea no anglosajona",
-  "Fantasía celta",
-  "Fantasía latinoamericana",
-  "Fantasía LGBTQ+",
-  "Proto-ciencia ficción",
-  "Proto-fantasía",
-  "Mitología y epopeyas",
-  "Novelas de caballerías",
-  "Novelas góticas",
-  "Romances científicos",
-  "Literatura pulp",
-  "Horror cósmico",
-  "Afrofuturismo",
-  "Fantastika",
-  "K-fantasy",
-  "Light novels",
-  "Manga",
-  "Anime",
-  "Mecha"
-]
+// ========== CONFIGURACIÓN DEL ORÁCULO ==========
+// Cambia estos valores para usar diferentes modelos de oráculo
+const ORACLE_TYPE: 'ply' | 'gltf' | 'obj' = 'ply' // Tipo de modelo: 'ply', 'gltf', 'obj'
+const ORACLE_MODEL = 'Jaguar ring.ply' // Nombre del archivo (con extensión)
+// angel
+//const ORACLE_SCALE = 0.0024 // Ajusta el tamaño del modelo si es necesario
+//const ORACLE_POSITION: [number, number, number] = [0, 0.5, 0] // Posición [x, y, z]
+//const ORACLE_ROTATION: [number, number, number] = [0, -Math.PI / 2, 0] // Rotación [x, y, z]
+// anell
+const ORACLE_SCALE = 0.1
+const ORACLE_POSITION: [number, number, number] = [0, 0.5, 0] // Posición [x, y, z]
+//const ORACLE_ROTATION: [number, number, number] = [4, -Math.PI / 2, 0] // Rotación [x, y, z]
+const ORACLE_ROTATION: [number, number, number] = [1.558, 3.375, 0.831] // Rotación [x, y, z]
 
-// Componente para el cúmulo molecular
-function MolecularCluster({ texture }: { texture?: THREE.Texture | null }) {
-  const groupRef = useRef<THREE.Group>(null)
-  const [hoveredSphere, setHoveredSphere] = useState<number | null>(null)
-  const { camera, scene, gl } = useThree()
-  const raycaster = useMemo(() => new THREE.Raycaster(), [])
+// CONTROLES DE DESARROLLO
+const SHOW_DEV_CONTROLS = false // Cambiar a false para ocultar los controles en producción
+
+// ===============================================
+
+// Componente SpotLight con helper opcional
+function SpotLightWithHelper() {
+  const lightRef = useRef<THREE.SpotLight>(null)
+  const targetRef = useRef<THREE.Object3D>(null)
+  const [texture, setTexture] = React.useState<THREE.Texture | null>(null)
   
-  // Generar las posiciones y tamaños de las esferas basado en los géneros
-  const spheres = useMemo(() => {
-    const sphereData = []
-    
-    for (let i = 0; i < GENEROS_LITERARIOS.length; i++) {
-      // Tamaños variados pero no muy distantes (entre 0.3 y 0.8)
-      const radius = 0.3 + Math.random() * 0.5
-      
-      // Posición inicial
-      let position = new THREE.Vector3()
-      
-      if (i === 0) {
-        // La primera esfera siempre en el centro
-        position.set(0, 0, 0)
-      } else {
-        // Elegir una esfera existente al azar
-        const targetSphere = sphereData[Math.floor(Math.random() * sphereData.length)]
-        const direction = new THREE.Vector3(
-          (Math.random() - 0.5),
-          (Math.random() - 0.5),
-          (Math.random() - 0.5)
-        ).normalize()
-        
-        // Posicionar cerca de la esfera objetivo (con algo de solapamiento)
-        const distance = targetSphere.radius + radius * 0.7 // 0.7 para crear solapamiento
-        position = targetSphere.position.clone().add(direction.multiplyScalar(distance))
-      }
-      
-      sphereData.push({
-        position,
-        radius,
-        id: i,
-        genero: GENEROS_LITERARIOS[i] // Asignar el género correspondiente
-      })
-    }
-    
-    // Calcular el centro de masa del cúmulo
-    const center = new THREE.Vector3()
-    sphereData.forEach(sphere => {
-      center.add(sphere.position)
+  // Cargar textura
+  useEffect(() => {
+    const loader = new THREE.TextureLoader()
+    loader.load('/textures/disturb.jpg', (loadedTexture) => {
+      loadedTexture.minFilter = THREE.LinearFilter
+      loadedTexture.magFilter = THREE.LinearFilter
+      loadedTexture.generateMipmaps = false
+      loadedTexture.colorSpace = THREE.SRGBColorSpace
+      setTexture(loadedTexture)
     })
-    center.divideScalar(sphereData.length)
-    
-    // Centrar todo el cúmulo
-    sphereData.forEach(sphere => {
-      sphere.position.sub(center)
-    })
-    
-    return sphereData
   }, [])
   
-  // Manejar hover con detección de profundidad
-  const handlePointerOver = (e: any, sphereId: number) => {
-    e.stopPropagation()
-    
-    // Obtener la posición del mouse
-    const pointer = new THREE.Vector2(
-      (e.clientX / window.innerWidth) * 2 - 1,
-      -(e.clientY / window.innerHeight) * 2 + 1
-    )
-    
-    // Configurar el raycaster
-    raycaster.setFromCamera(pointer, camera)
-    
-    // Obtener todas las intersecciones con las esferas del grupo
-    if (groupRef.current) {
-      const intersects = raycaster.intersectObjects(groupRef.current.children, true)
-      
-      // Si la primera intersección es la esfera actual, activar hover
-      if (intersects.length > 0 && intersects[0].object.userData.sphereId === sphereId) {
-        setHoveredSphere(sphereId)
-        gl.domElement.style.cursor = 'pointer'
-      }
-    }
-  }
-  
-  const handlePointerOut = () => {
-    setHoveredSphere(null)
-    gl.domElement.style.cursor = 'auto'
-  }
-  
-  // Limpiar cursor al desmontar
-  useEffect(() => {
-    return () => {
-      gl.domElement.style.cursor = 'auto'
-    }
-  }, [gl])
-  
-  // Animación sutil del grupo completo
-  useFrame((state) => {
-    if (groupRef.current) {
-      // Rotación muy lenta del cúmulo completo
-      groupRef.current.rotation.y += 0.001
-      groupRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.3) * 0.05
-      // Pequeña pulsación
-      const scale = 1 + Math.sin(state.clock.elapsedTime * 0.5) * 0.02
-      groupRef.current.scale.setScalar(scale)
-    }
-  })
-  
-  return (
-    <group ref={groupRef} position={[0, 0, -5]}>
-      {spheres.map((sphere) => {
-        const isHovered = hoveredSphere === sphere.id
-        
-        return (
-          <SphereItem
-            key={sphere.id}
-            sphere={sphere}
-            isHovered={isHovered}
-            texture={texture}
-            onPointerOver={(e: any) => handlePointerOver(e, sphere.id)}
-            onPointerOut={handlePointerOut}
-          />
-        )
-      })}
-    </group>
-  )
-}
-
-// Componente individual para cada esfera con animación
-function SphereItem({ sphere, isHovered, texture, onPointerOver, onPointerOut }: any) {
-  const meshRef = useRef<THREE.Mesh>(null)
-  const [displayedText, setDisplayedText] = useState('')
-  
-  // Efecto typewriter para el género
-  useEffect(() => {
-    if (isHovered) {
-      setDisplayedText('')
-      let currentIndex = 0
-      const interval = setInterval(() => {
-        if (currentIndex <= sphere.genero.length) {
-          setDisplayedText(sphere.genero.slice(0, currentIndex))
-          currentIndex++
-        } else {
-          clearInterval(interval)
-        }
-      }, 50) // 50ms entre cada letra
-      
-      return () => {
-        clearInterval(interval)
-        setDisplayedText('')
-      }
-    } else {
-      setDisplayedText('')
-    }
-  }, [isHovered, sphere.genero])
-  
-  // Animar la escala con lerp
-  useFrame(() => {
-    if (meshRef.current) {
-      const targetScale = isHovered ? 1.15 : 1
-      meshRef.current.scale.lerp(
-        new THREE.Vector3(targetScale, targetScale, targetScale),
-        0.1
-      )
-    }
-  })
-  
-  return (
-    <mesh
-      ref={meshRef}
-      position={sphere.position}
-      userData={{ sphereId: sphere.id }}
-      onPointerOver={onPointerOver}
-      onPointerOut={onPointerOut}
-    >
-      <sphereGeometry args={[sphere.radius, 64, 64]} />
-      {texture ? (
-        <meshPhysicalMaterial
-          map={texture}                                   // Mantener la textura como map principal
-          color="#ffffff"                                // Blanco puro
-          metalness={0.3}                                 // Reducido para ver mejor la textura
-          roughness={0.05}                                // Muy bajo para máximo brillo
-          clearcoat={1}                                   // Máximo recubrimiento brillante
-          clearcoatRoughness={0}                          // Recubrimiento perfectamente liso
-          reflectivity={1}                                // Máxima reflectividad
-          transparent
-          opacity={isHovered ? 1 : 0.95}                  // Opacidad muy alta
-          emissive={isHovered ? "#808080" : "#404040"}  // Emisión gris para iluminar
-          emissiveIntensity={isHovered ? 0.3 : 0.2}      // Mayor intensidad para brillo
-          side={THREE.DoubleSide}
-        />
-      ) : (
-        <meshPhysicalMaterial
-          color="#f0f0f0"                                // Gris muy claro casi blanco
-          metalness={0.5}                                 // Medio metálico
-          roughness={0.05}                                // Muy brillante
-          clearcoat={1}
-          clearcoatRoughness={0}
-          reflectivity={1}
-          emissive={isHovered ? "#a0a0a0" : "#808080"}  // Emisión gris clara
-          emissiveIntensity={isHovered ? 0.3 : 0.2}      // Buena intensidad de brillo
-        />
-      )}
-      
-      {/* Tooltip con efecto typewriter */}
-      {isHovered && (
-        <Html
-          position={[0, sphere.radius + 0.15, 0]}
-          center
-          style={{
-            transition: 'opacity 0.3s',
-            opacity: isHovered ? 1 : 0,
-            pointerEvents: 'none'
-          }}
-        >
-          <div className="bg-black/80 px-3 py-1 rounded-lg backdrop-blur-sm">
-            <p className="text-white text-xs font-medium whitespace-nowrap">
-              {displayedText}
-              <span className="animate-pulse">|</span>
-            </p>
-          </div>
-        </Html>
-      )}
-    </mesh>
-  )
-}
-
-export function CatalogScene() {
-  const { camera } = useThree()
-  const { currentScene, sharedTexture } = useNavigationStore()
-  const sphereRef = useRef<THREE.Mesh>(null)
-  
-  useEffect(() => {
-    // Solo modificar la cámara si esta escena está activa
-    if (currentScene === 'catalog') {
-      console.log('CatalogScene activa - ajustando cámara')
-      // Posicionar la cámara en el centro de la esfera
-      camera.position.set(0, 0, 0)
-      camera.lookAt(0, 0, -1)
-      camera.rotation.set(0, 0, 0)
-      if (camera instanceof THREE.PerspectiveCamera) {
-        camera.fov = 75
-        camera.updateProjectionMatrix()
-      }
-    }
-  }, [camera, currentScene])
-  
-  // Animación muy lenta de la esfera de fondo
-  useFrame((state) => {
-    if (sphereRef.current) {
-      // Rotación muy lenta en múltiples ejes para crear sensación de flotación
-      sphereRef.current.rotation.y += 0.0002  // Reducido de 0.0005 a 0.0002
-      sphereRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.05) * 0.01  // Reducido de 0.1 a 0.05 y de 0.02 a 0.01
-      sphereRef.current.rotation.z = Math.cos(state.clock.elapsedTime * 0.04) * 0.008  // Reducido de 0.08 a 0.04 y de 0.015 a 0.008
+  // Animar la posición del spotlight
+  useFrame(({ clock }) => {
+    if (lightRef.current && targetRef.current) {
+      const time = clock.getElapsedTime() / 3
+      lightRef.current.position.x = Math.cos(time) * 2.5
+      lightRef.current.position.z = Math.sin(time) * 2.5
+      // El target siempre mira al modelo
+      lightRef.current.target = targetRef.current
     }
   })
   
   return (
     <>
-      {/* Luz ambiental más brillante para las burbujas */}
-      <ambientLight intensity={1} />
-      <pointLight position={[0, 0, 0]} intensity={1.2} />
-      {/* Luces adicionales para mejor visualización de las burbujas */}
-      <pointLight position={[5, 5, 5]} intensity={0.5} color="#ffffff" />
-      <pointLight position={[-5, -5, -5]} intensity={0.5} color="#ffffff" />
+      <spotLight
+        ref={lightRef}
+        position={[2.5, 5, 2.5]}
+        angle={Math.PI / 6}
+        penumbra={1}
+        decay={2}
+        distance={0}
+        intensity={100}
+        castShadow
+        map={texture}
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+        shadow-camera-near={1}
+        shadow-camera-far={10}
+        shadow-focus={1}
+        color="#ffffff"
+      />
+      {/* Target invisible para el spotlight */}
+      <object3D ref={targetRef} position={[0, 0.5, 0]} />
+    </>
+  )
+}
+
+// Componentes separados para cada tipo de modelo para evitar llamadas condicionales de hooks
+function PLYModel({ position, rotation }: { position: [number, number, number], rotation: [number, number, number] }) {
+  const plyGeometry = useLoader(PLYLoader, `/models/ply/${ORACLE_MODEL}`)
+  
+  useEffect(() => {
+    if (plyGeometry) {
+      plyGeometry.scale(ORACLE_SCALE, ORACLE_SCALE, ORACLE_SCALE)
+      plyGeometry.computeVertexNormals()
+    }
+  }, [plyGeometry])
+  
+  return (
+    <mesh 
+      geometry={plyGeometry}
+      rotation={rotation}
+      position={position}
+      castShadow
+      receiveShadow
+    >
+      <meshLambertMaterial color="#ffffff" />
+    </mesh>
+  )
+}
+
+function GLTFModel({ position, rotation }: { position: [number, number, number], rotation: [number, number, number] }) {
+  const groupRef = useRef<THREE.Group>(null)
+  const { scene } = useGLTF(`/models/gltf/${ORACLE_MODEL}`)
+  
+  useEffect(() => {
+    if (scene && groupRef.current) {
+      // Limpiar el grupo
+      while (groupRef.current.children.length > 0) {
+        groupRef.current.remove(groupRef.current.children[0])
+      }
       
-      {/* Esfera invertida - estamos dentro mirando hacia afuera */}
-      <mesh ref={sphereRef} scale={[-1, 1, 1]}>
-        <sphereGeometry args={[30, 64, 64]} />
-        {sharedTexture ? (
-          <meshBasicMaterial 
-            map={sharedTexture}
-            side={THREE.BackSide}
-            toneMapped={false}
+      // Clonar y agregar el modelo
+      const model = scene.clone()
+      
+      // Aplicar sombras a todos los meshes
+      model.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.castShadow = true
+          child.receiveShadow = true
+        }
+      })
+      
+      groupRef.current.add(model)
+    }
+  }, [scene])
+  
+  return (
+    <group
+      ref={groupRef}
+      rotation={rotation}
+      position={position}
+      scale={[ORACLE_SCALE, ORACLE_SCALE, ORACLE_SCALE]}
+    />
+  )
+}
+
+function OBJModel({ position, rotation }: { position: [number, number, number], rotation: [number, number, number] }) {
+  const groupRef = useRef<THREE.Group>(null)
+  const obj = useLoader(OBJLoader, `/models/obj/${ORACLE_MODEL}`)
+  
+  useEffect(() => {
+    if (obj && groupRef.current) {
+      // Limpiar el grupo
+      while (groupRef.current.children.length > 0) {
+        groupRef.current.remove(groupRef.current.children[0])
+      }
+      
+      // Clonar y agregar el modelo
+      const model = obj.clone()
+      
+      // Aplicar material blanco y sombras a todos los meshes
+      model.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.castShadow = true
+          child.receiveShadow = true
+          child.material = new THREE.MeshLambertMaterial({ color: '#ffffff' })
+        }
+      })
+      
+      groupRef.current.add(model)
+    }
+  }, [obj])
+  
+  return (
+    <group
+      ref={groupRef}
+      rotation={rotation}
+      position={position}
+      scale={[ORACLE_SCALE, ORACLE_SCALE, ORACLE_SCALE]}
+    />
+  )
+}
+
+// Componente para el modelo del Oráculo
+function OracleModel({ position, rotation }: { position: [number, number, number], rotation: [number, number, number] }) {
+  // Renderizar el componente apropiado según el tipo
+  if (ORACLE_TYPE === 'ply') {
+    return <PLYModel position={position} rotation={rotation} />
+  }
+  
+  if (ORACLE_TYPE === 'gltf') {
+    return <GLTFModel position={position} rotation={rotation} />
+  }
+  
+  if (ORACLE_TYPE === 'obj') {
+    return <OBJModel position={position} rotation={rotation} />
+  }
+  
+  // Fallback
+  return (
+    <mesh position={position}>
+      <boxGeometry args={[1, 1.6, 1]} />
+      <meshBasicMaterial color="gray" />
+    </mesh>
+  )
+}
+
+// Componente de controles de desarrollo
+function DevControls({ onRotationChange }: { 
+  onRotationChange: (axis: 'x' | 'y' | 'z', value: number) => void 
+}) {
+  const [rotationX, setRotationX] = useState(ORACLE_ROTATION[0])
+  const [rotationY, setRotationY] = useState(ORACLE_ROTATION[1])
+  const [rotationZ, setRotationZ] = useState(ORACLE_ROTATION[2])
+  
+  const handleRotationXChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value)
+    setRotationX(value)
+    onRotationChange('x', value)
+  }
+  
+  const handleRotationYChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value)
+    setRotationY(value)
+    onRotationChange('y', value)
+  }
+  
+  const handleRotationZChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value)
+    setRotationZ(value)
+    onRotationChange('z', value)
+  }
+  
+  if (!SHOW_DEV_CONTROLS) return null
+  
+  return (
+    <Html fullscreen>
+      <div style={{
+        position: 'fixed',
+        bottom: '20px',
+        left: '20px',
+        background: 'rgba(0, 0, 0, 0.8)',
+        padding: '20px',
+        borderRadius: '8px',
+        color: 'white',
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        minWidth: '300px',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        pointerEvents: 'auto',
+        zIndex: 1000
+      }}>
+        <div style={{ position: 'absolute', top: '10px', left: '10px', fontSize: '10px', color: '#00ff00' }}>DEV CONTROLS</div>
+        <div style={{ marginBottom: '15px', marginTop: '30px' }}>
+          <label style={{ display: 'block', marginBottom: '5px', color: '#00ff00' }}>ORACLE ROTATION X: {rotationX.toFixed(3)}</label>
+          <input
+            type="range"
+            min="0"
+            max="6.283"
+            step="0.001"
+            value={rotationX}
+            onChange={handleRotationXChange}
+            style={{ width: '100%', cursor: 'pointer' }}
           />
-        ) : (
-          <meshBasicMaterial 
-            color="#1a1a2e"
-            side={THREE.BackSide}
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', opacity: 0.5 }}>
+            <span>0°</span>
+            <span>180°</span>
+            <span>360°</span>
+          </div>
+        </div>
+        
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block', marginBottom: '5px', color: '#00ff00' }}>ORACLE ROTATION Y: {rotationY.toFixed(3)}</label>
+          <input
+            type="range"
+            min="0"
+            max="6.283"
+            step="0.001"
+            value={rotationY}
+            onChange={handleRotationYChange}
+            style={{ width: '100%', cursor: 'pointer' }}
           />
-        )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', opacity: 0.5 }}>
+            <span>0°</span>
+            <span>180°</span>
+            <span>360°</span>
+          </div>
+        </div>
+        
+        <div>
+          <label style={{ display: 'block', marginBottom: '5px', color: '#00ff00' }}>ORACLE ROTATION Z: {rotationZ.toFixed(3)}</label>
+          <input
+            type="range"
+            min="0"
+            max="6.283"
+            step="0.001"
+            value={rotationZ}
+            onChange={handleRotationZChange}
+            style={{ width: '100%', cursor: 'pointer' }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', opacity: 0.5 }}>
+            <span>0°</span>
+            <span>180°</span>
+            <span>360°</span>
+          </div>
+        </div>
+        
+        <div style={{ marginTop: '15px', fontSize: '10px', opacity: 0.6 }}>
+          <div>Copiar valores:</div>
+          <div style={{ color: '#ffcc00', marginTop: '5px' }}>const ORACLE_ROTATION = [{rotationX.toFixed(3)}, {rotationY.toFixed(3)}, {rotationZ.toFixed(3)}]</div>
+        </div>
+      </div>
+    </Html>
+  )
+}
+
+export function CatalogScene() {
+  const { gl, scene, camera } = useThree()
+  const currentScene = useNavigationStore((state) => state.currentScene)
+  
+  // Estados para los valores dinámicos
+  const [oracleRotation, setOracleRotation] = useState<[number, number, number]>(ORACLE_ROTATION)
+  
+  const handleRotationChange = (axis: 'x' | 'y' | 'z', value: number) => {
+    if (axis === 'x') {
+      setOracleRotation([value, oracleRotation[1], oracleRotation[2]])
+    } else if (axis === 'y') {
+      setOracleRotation([oracleRotation[0], value, oracleRotation[2]])
+    } else {
+      setOracleRotation([oracleRotation[0], oracleRotation[1], value])
+    }
+  }
+  
+  useEffect(() => {
+    // Solo configurar el renderer si esta escena está activa
+    if (currentScene === 'catalog') {
+      // Configurar sombras
+      gl.shadowMap.enabled = true
+      gl.shadowMap.type = THREE.PCFSoftShadowMap
+      
+      // Configurar tone mapping
+      gl.toneMapping = THREE.ACESFilmicToneMapping
+      gl.toneMappingExposure = 1
+      
+      // Configurar color de fondo negro
+      gl.setClearColor(0x000000, 1)
+      
+      // Agregar niebla para hacer visible el haz de luz
+      scene.fog = new THREE.Fog(0x000000, 1, 15)
+      
+      // Ajustar la cámara más cerca
+      camera.position.set(3, 2, 3)
+      camera.lookAt(0, 0.5, 0)
+      
+      return () => {
+        // Limpiar la niebla al salir de la escena
+        scene.fog = null
+      }
+    }
+  }, [gl, scene, camera, currentScene])
+  
+  return (
+    <>
+      {/* Iluminación ambiental */}
+      <hemisphereLight 
+        color={0xffffff} 
+        groundColor={0x444444} 
+        intensity={0.15} 
+      />
+      
+      {/* SpotLight animado */}
+      <SpotLightWithHelper />
+      
+      {/* Plano del suelo */}
+      <mesh 
+        rotation={[-Math.PI / 2, 0, 0]} 
+        position={[0, -1, 0]}
+        receiveShadow
+      >
+        <planeGeometry args={[20, 20]} />
+        <meshLambertMaterial color={0xbcbcbc} />
       </mesh>
       
-      {/* Cúmulo molecular de burbujas */}
-      <MolecularCluster texture={sharedTexture} />
+      {/* Modelo del Oráculo */}
+      <React.Suspense fallback={
+        <mesh position={ORACLE_POSITION}>
+          <boxGeometry args={[1, 1.6, 1]} />
+          <meshBasicMaterial color="gray" />
+        </mesh>
+      }>
+        <OracleModel position={ORACLE_POSITION} rotation={oracleRotation} />
+      </React.Suspense>
       
-      {/* Controles limitados para explorar el interior */}
+      {/* Haces de luz volumétricos */}
+      <VolumetricSpotlight />
+      
+      {/* Controles de órbita */}
       <OrbitControls 
+        minDistance={2}
+        maxDistance={10}
+        maxPolarAngle={Math.PI / 2}
+        target={ORACLE_POSITION}
         enablePan={false}
-        enableZoom={true}
-        minDistance={0.1}
-        maxDistance={20}
-        target={[0, 0, -5]}
       />
+      
+      {/* Controles de desarrollo */}
+      <DevControls 
+        onRotationChange={handleRotationChange}
+      />
+      
     </>
+  )
+}
+
+// Componente para crear haces de luz volumétricos
+function VolumetricSpotlight() {
+  const meshRef = useRef<THREE.Mesh>(null)
+  
+  useFrame(({ clock }) => {
+    if (meshRef.current) {
+      const time = clock.getElapsedTime() / 3
+      meshRef.current.position.x = Math.cos(time) * 2.5
+      meshRef.current.position.z = Math.sin(time) * 2.5
+      // Hacer que el cono siempre apunte hacia abajo
+      meshRef.current.lookAt(meshRef.current.position.x, -10, meshRef.current.position.z)
+    }
+  })
+  
+  return (
+    <mesh ref={meshRef} position={[2.5, 5, 2.5]}>
+      <coneGeometry args={[2.5, 6, 32, 1, true]} />
+      <meshBasicMaterial 
+        color="#ffffff"
+        transparent
+        opacity={0.1}
+        side={THREE.DoubleSide}
+        depthWrite={false}
+      />
+    </mesh>
   )
 }
