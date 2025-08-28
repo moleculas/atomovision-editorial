@@ -83,6 +83,7 @@ export default function EditHomePage() {
       
       if (settingsRes.ok) {
         const { settings } = await settingsRes.json()
+        
         setSettings({
           featuredBookId: settings.featuredBookId?._id || '',
           headerTitle: settings.headerTitle || '',
@@ -124,7 +125,7 @@ export default function EditHomePage() {
     setSelectedBook(book)
     setSettings(prev => ({
       ...prev,
-      featuredBookId: book.id
+      featuredBookId: (book as any)._id || book.id
     }))
     setSearchQuery('')
   }
@@ -145,6 +146,7 @@ export default function EditHomePage() {
       if (res.ok) {
         setToast({ message: 'Configuración guardada correctamente', type: 'success' })
       } else {
+        const errorData = await res.json()
         setToast({ message: 'Error al guardar la configuración', type: 'error' })
       }
     } catch (error) {
