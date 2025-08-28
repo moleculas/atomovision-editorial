@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
-import clientPromise from '@/lib/mongodb/client'
+import { connectMongoose } from '@/lib/mongodb/client'
 import Book from '@/lib/mongodb/models/Book'
 import Rating from '@/lib/mongodb/models/Rating'
+import { ensureModelsAreRegistered } from '@/lib/mongodb/models'
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    await clientPromise
+    await connectMongoose()
+    
+    // Asegurar que todos los modelos estén registrados
+    ensureModelsAreRegistered()
     
     const { rating } = await request.json()
     
@@ -113,7 +117,10 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    await clientPromise
+    await connectMongoose()
+    
+    // Asegurar que todos los modelos estén registrados
+    ensureModelsAreRegistered()
     
     // Obtener IP del usuario
     const headersList = headers()
