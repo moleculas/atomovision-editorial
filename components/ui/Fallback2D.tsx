@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getBooks } from '@/lib/cms'
@@ -35,10 +35,38 @@ export function Fallback2D() {
       question4: '¿Qué secretos guardas?'
     }
   })
+  
+  // Estados para el chat
+  const [chatMessages, setChatMessages] = useState<Array<{role: 'user' | 'assistant', content: string}>>([{
+    role: 'assistant',
+    content: 'Bienvenido a este universo literario. Soy el narrador de esta historia y puedo guiarte por todos sus rincones. ¿Qué te gustaría descubrir?'
+  }])
+  const [chatInput, setChatInput] = useState('')
+  const [isChatLoading, setIsChatLoading] = useState(false)
+  const [chatEnabled, setChatEnabled] = useState(false)
+  
+  // Ref para el contenedor de mensajes del chat
+  const chatMessagesRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     loadData()
   }, [])
+  
+  // Efecto para hacer scroll al último mensaje
+  useEffect(() => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight
+    }
+  }, [chatMessages])
+  
+  // Verificar si el libro tiene chat habilitado
+  useEffect(() => {
+    if (featuredBook && (featuredBook as any)._id) {
+      // Verificar si el libro tiene configuración N8N
+      const hasWebhook = !!(featuredBook as any).n8nConfig?.webhookUrl
+      setChatEnabled(hasWebhook)
+    }
+  }, [featuredBook])
   
   const loadData = async () => {
     try {
@@ -139,6 +167,56 @@ export function Fallback2D() {
 
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + Math.ceil(newBooks.length / 4)) % Math.ceil(newBooks.length / 4))
+  }
+  
+  // Funciones del chat
+  const handleSendMessage = async (message?: string) => {
+    const messageToSend = message || chatInput.trim()
+    if (!messageToSend || isChatLoading || !featuredBook || !chatEnabled) return
+    
+    // Añadir mensaje del usuario
+    setChatMessages(prev => [...prev, { role: 'user', content: messageToSend }])
+    setChatInput('')
+    setIsChatLoading(true)
+    
+    try {
+      const response = await fetch('/api/chat/n8n', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bookId: (featuredBook as any)._id || featuredBook.id,
+          message: messageToSend
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setChatMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content: data.data.response 
+        }])
+      } else {
+        setChatMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content: 'Lo siento, no pude procesar tu pregunta. Por favor, intenta de nuevo más tarde.' 
+        }])
+      }
+    } catch (error) {
+      console.error('Error en chat:', error)
+      setChatMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: 'Ups, parece que hay un problema de conexión. Por favor, intenta de nuevo.' 
+      }])
+    } finally {
+      setIsChatLoading(false)
+    }
+  }
+  
+  const handleQuickQuestion = (question: string) => {
+    handleSendMessage(question)
   }
 
   if (loading) {
@@ -342,62 +420,120 @@ export function Fallback2D() {
                 <div className="bg-gray-50 rounded-xl p-6 h-full flex flex-col">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                    <h3 className="text-lg font-semibold">Habla con los personajes</h3>
+                    <h3 className="text-lg font-semibold">Explora el universo del libro</h3>
                   </div>
                   
                   <div className="mb-4">
                     <p className="text-sm text-gray-600 mb-3">
-                      La IA da vida a este universo, permitiéndote conversar directamente con los personajes del libro. 
-                      Cada pregunta que hagas recibirá una respuesta única basada en la personalidad y experiencias del personaje. 
-                      Descubre detalles ocultos, explora sus motivaciones y sumérgete en el mundo de la historia.
+                      La IA te permite explorar cada rincón de este universo literario. 
+                      Pregunta sobre los personajes, descubre los secretos del mundo, comprende las motivaciones ocultas 
+                      o simplemente deja que el narrador te guíe por los misterios de la historia.
                     </p>
                     <div className="space-y-2 py-4">
-                      <button className="text-sm bg-white px-3 py-1.5 rounded-full border border-gray-200 hover:border-primary hover:text-primary transition-colors w-full text-left">
+                      <button 
+                        onClick={() => handleQuickQuestion(homeSettings.chatQuestions.question1)}
+                        disabled={!chatEnabled || isChatLoading}
+                        className="text-sm bg-white px-3 py-1.5 rounded-full border border-gray-200 hover:border-primary hover:text-primary transition-colors w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
                         &quot;{homeSettings.chatQuestions.question1}&quot;
                       </button>
-                      <button className="text-sm bg-white px-3 py-1.5 rounded-full border border-gray-200 hover:border-primary hover:text-primary transition-colors w-full text-left">
+                      <button 
+                        onClick={() => handleQuickQuestion(homeSettings.chatQuestions.question2)}
+                        disabled={!chatEnabled || isChatLoading}
+                        className="text-sm bg-white px-3 py-1.5 rounded-full border border-gray-200 hover:border-primary hover:text-primary transition-colors w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
                         &quot;{homeSettings.chatQuestions.question2}&quot;
                       </button>
-                      <button className="text-sm bg-white px-3 py-1.5 rounded-full border border-gray-200 hover:border-primary hover:text-primary transition-colors w-full text-left">
+                      <button 
+                        onClick={() => handleQuickQuestion(homeSettings.chatQuestions.question3)}
+                        disabled={!chatEnabled || isChatLoading}
+                        className="text-sm bg-white px-3 py-1.5 rounded-full border border-gray-200 hover:border-primary hover:text-primary transition-colors w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
                         &quot;{homeSettings.chatQuestions.question3}&quot;
                       </button>
-                      <button className="text-sm bg-white px-3 py-1.5 rounded-full border border-gray-200 hover:border-primary hover:text-primary transition-colors w-full text-left">
+                      <button 
+                        onClick={() => handleQuickQuestion(homeSettings.chatQuestions.question4)}
+                        disabled={!chatEnabled || isChatLoading}
+                        className="text-sm bg-white px-3 py-1.5 rounded-full border border-gray-200 hover:border-primary hover:text-primary transition-colors w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
                         &quot;{homeSettings.chatQuestions.question4}&quot;
                       </button>
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-lg p-4 flex-1 overflow-y-auto mb-4">
-                    <div className="flex gap-3 mb-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <BookOpen className="w-4 h-4 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium mb-1">Protagonista</p>
-                        <p className="text-sm text-gray-600">
-                          ¡Hola! Soy el protagonista de esta historia. ¿Qué te gustaría saber sobre mi mundo o mis aventuras?
-                        </p>
-                      </div>
+                  <div ref={chatMessagesRef} className="bg-white rounded-lg p-4 flex-1 overflow-y-auto mb-4 max-h-[400px]">
+                    <div className="space-y-3">
+                      {chatMessages.map((message, index) => (
+                        <div key={index} className="flex gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            message.role === 'user' ? 'bg-gray-200' : 'bg-primary/10'
+                          }`}>
+                            {message.role === 'user' ? (
+                              <span className="text-xs font-bold">TÚ</span>
+                            ) : (
+                              <BookOpen className="w-4 h-4 text-primary" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium mb-1">
+                              {message.role === 'user' ? 'Tú' : 'Narrador'}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {message.content}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                      {isChatLoading && (
+                        <div className="flex gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <BookOpen className="w-4 h-4 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium mb-1">Narrador</p>
+                            <div className="flex gap-1">
+                              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
+                  <form className="flex gap-2" onSubmit={(e) => {
+                    e.preventDefault()
+                    handleSendMessage()
+                  }}>
                     <input
                       type="text"
-                      placeholder="Escribe tu pregunta..."
-                      className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-primary transition-colors"
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value.slice(0, 500))}
+                      placeholder={chatEnabled ? "Escribe tu pregunta..." : "Chat no disponible"}
+                      disabled={!chatEnabled || isChatLoading}
+                      className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-primary transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      maxLength={500}
                     />
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                      disabled={!chatEnabled || isChatLoading || !chatInput.trim()}
+                      className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                     >
                       <Send className="w-4 h-4" />
                     </button>
                   </form>
 
-                  <p className="text-xs text-gray-500 mt-3 text-center">
-                    Funcionalidad próximamente • La IA está aprendiendo
-                  </p>
+                  {!chatEnabled && (
+                    <p className="text-xs text-gray-500 mt-3 text-center">
+                      El chat no está disponible para este libro
+                    </p>
+                  )}
+                  {chatEnabled && (
+                    <p className="text-xs text-gray-500 mt-3 text-center">
+                      Explora el universo literario • Respuestas únicas por IA
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

@@ -56,6 +56,7 @@ function transformBookForFrontend(book: any) {
     aiGeneration: book.aiGeneration,
     aiModel: book.aiGeneration?.textModel, // Por compatibilidad
     coverAiModel: book.aiGeneration?.coverModel, // Por compatibilidad
+    n8nConfig: book.n8nConfig, // Añadir configuración N8N
   }
 }
 

@@ -87,6 +87,12 @@ export interface IBook {
   // Etiquetas
   tags: string[]
   
+  // Configuración IA Conversacional
+  n8nConfig?: {
+    webhookUrl?: string
+    agentId?: string
+  }
+  
   // SEO
   seo?: {
     metaTitle?: string
@@ -283,6 +289,17 @@ const bookSchema = new Schema<IBook>(
       type: [String],
       default: [],
       trim: true,
+    },
+    
+    n8nConfig: {
+      webhookUrl: {
+        type: String,
+        trim: true,
+      },
+      agentId: {
+        type: String,
+        trim: true,
+      },
     },
     
     seo: {

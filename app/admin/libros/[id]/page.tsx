@@ -47,6 +47,10 @@ interface BookForm {
     coverModel: string
     coverPrompt: string
   }
+  n8nConfig: {
+    webhookUrl: string
+    agentId: string
+  }
 }
 
 export default function EditBookPage() {
@@ -99,6 +103,10 @@ export default function EditBookPage() {
       textPrompt: '',
       coverModel: '',
       coverPrompt: ''
+    },
+    n8nConfig: {
+      webhookUrl: '',
+      agentId: ''
     }
   })
   
@@ -201,6 +209,10 @@ export default function EditBookPage() {
             textPrompt: book.aiGeneration?.textPrompt || '',
             coverModel: book.aiGeneration?.coverModel || '',
             coverPrompt: book.aiGeneration?.coverPrompt || ''
+          },
+          n8nConfig: {
+            webhookUrl: book.n8nConfig?.webhookUrl || '',
+            agentId: book.n8nConfig?.agentId || ''
           }
         })
         setDataReady(true)
@@ -704,6 +716,57 @@ export default function EditBookPage() {
                   </option>
                 ))}
               </select>
+            </div>
+          </div>
+        </div>
+        
+        {/* Configuración IA Conversacional */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">IA Conversacional (Chat N8N)</h2>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Webhook URL
+              </label>
+              <input
+                type="text"
+                placeholder="https://n8n.example.com/webhook/xxxxx"
+                value={formData.n8nConfig.webhookUrl}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  n8nConfig: {
+                    ...prev.n8nConfig,
+                    webhookUrl: e.target.value
+                  }
+                }))}
+                className="w-full px-4 py-2 bg-[#faf9f7] border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                URL del webhook N8N para el chat con personajes
+              </p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                ID del Agente
+              </label>
+              <input
+                type="text"
+                placeholder="agent-123"
+                value={formData.n8nConfig.agentId}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  n8nConfig: {
+                    ...prev.n8nConfig,
+                    agentId: e.target.value
+                  }
+                }))}
+                className="w-full px-4 py-2 bg-[#faf9f7] border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Identificador único del agente (opcional)
+              </p>
             </div>
           </div>
         </div>
