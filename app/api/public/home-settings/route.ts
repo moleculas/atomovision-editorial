@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectMongoose } from '@/lib/mongodb/client'
 import HomeSettings from '@/lib/mongodb/models/HomeSettings'
+import Book from '@/lib/mongodb/models/Book'
 import { ensureModelsAreRegistered } from '@/lib/mongodb/models'
 
 // Función helper para construir URLs completas
@@ -63,22 +64,53 @@ function transformBookForFrontend(book: any) {
 // GET - Obtener configuración pública de la home
 export async function GET(request: NextRequest) {
   try {
+    console.log('[PUBLIC HOME-SETTINGS] Iniciando obtención de configuración')
+    
     await connectMongoose()
+    console.log('[PUBLIC HOME-SETTINGS] MongoDB conectado')
     
     // Asegurar que todos los modelos estén registrados
     ensureModelsAreRegistered()
+    console.log('[PUBLIC HOME-SETTINGS] Modelos registrados')
 
     // Buscar la configuración
-    const settings = await HomeSettings.findOne()
-      .populate({
-        path: 'featuredBookId',
-        populate: {
-          path: 'genre'
-        }
-      })
-      .lean() as any // Convertir a objeto plano para evitar problemas de serialización
+    console.log('[PUBLIC HOME-SETTINGS] Buscando HomeSettings...')
+    let settings = await HomeSettings.findOne()
+    
+    console.log('[PUBLIC HOME-SETTINGS] Settings sin populate:', settings)
+    console.log('[PUBLIC HOME-SETTINGS] featuredBookId en settings:', settings?.featuredBookId)
+    
+    // Si hay un featuredBookId, hacer populate manualmente
+    if (settings && settings.featuredBookId) {
+      console.log('[PUBLIC HOME-SETTINGS] Haciendo populate del libro...')
+      settings = await HomeSettings.findOne()
+        .populate({
+          path: 'featuredBookId',
+          populate: {
+            path: 'genre'
+          }
+        })
+        .lean() as any
+      
+      console.log('[PUBLIC HOME-SETTINGS] Settings con populate completo')
+      console.log('[PUBLIC HOME-SETTINGS] Libro populated:', !!settings?.featuredBookId)
+      console.log('[PUBLIC HOME-SETTINGS] Tipo de featuredBookId:', typeof settings?.featuredBookId)
+      
+      // Si featuredBookId es solo un ID, intentar cargar el libro manualmente
+      if (settings?.featuredBookId && typeof settings.featuredBookId === 'string') {
+        console.log('[PUBLIC HOME-SETTINGS] featuredBookId es string, cargando libro manualmente')
+        const book = await Book.findById(settings.featuredBookId).populate('genre').lean() as any
+        console.log('[PUBLIC HOME-SETTINGS] Libro cargado manualmente:', book?.title)
+        settings.featuredBookId = book
+      }
+    }
+    
+    console.log('[PUBLIC HOME-SETTINGS] Settings encontrados:', !!settings)
+    console.log('[PUBLIC HOME-SETTINGS] Featured book ID:', settings?.featuredBookId?._id)
+    console.log('[PUBLIC HOME-SETTINGS] Featured book title:', settings?.featuredBookId?.title)
     
     if (!settings) {
+      console.log('[PUBLIC HOME-SETTINGS] No hay settings, retornando valores por defecto')
       // Retornar configuración por defecto
       return NextResponse.json({ 
         settings: {
@@ -96,11 +128,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Transformar el libro destacado si existe
+    console.log('[PUBLIC HOME-SETTINGS] Transformando libro destacado...')
+    const transformedBook = transformBookForFrontend(settings?.featuredBookId)
+    console.log('[PUBLIC HOME-SETTINGS] Libro transformado:', transformedBook?.title)
+    
     const transformedSettings = {
       ...settings,
-      featuredBookId: transformBookForFrontend(settings?.featuredBookId)
+      featuredBookId: transformedBook
     }
 
+    console.log('[PUBLIC HOME-SETTINGS] Enviando respuesta')
     return NextResponse.json({ settings: transformedSettings })
   } catch (error) {
     console.error('Error al obtener configuración de home:', error)

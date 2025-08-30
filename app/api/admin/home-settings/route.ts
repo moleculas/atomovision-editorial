@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectMongoose } from '@/lib/mongodb/client'
 import HomeSettings from '@/lib/mongodb/models/HomeSettings'
-import Book from '@/lib/mongodb/models/Book' // Importante: registrar el modelo Book
 import mongoose from 'mongoose'
 import { ensureModelsAreRegistered } from '@/lib/mongodb/models'
 

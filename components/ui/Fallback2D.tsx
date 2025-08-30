@@ -75,9 +75,15 @@ export function Fallback2D() {
       let loadedFeaturedBook = null
       
       // Cargar configuración de la home
+      console.log('[FALLBACK2D] Cargando configuración de home...')
       const settingsRes = await fetch('/api/public/home-settings')
+      console.log('[FALLBACK2D] Response status:', settingsRes.status)
+      
       if (settingsRes.ok) {
         const { settings } = await settingsRes.json()
+        console.log('[FALLBACK2D] Settings recibidos:', settings)
+        console.log('[FALLBACK2D] Featured book:', settings?.featuredBookId)
+        
         if (settings) {
           setHomeSettings({
             headerTitle: settings.headerTitle || 'AtomoVisión',
@@ -87,12 +93,17 @@ export function Fallback2D() {
           
           // Si hay un libro destacado configurado, usarlo
           if (settings.featuredBookId) {
+            console.log('[FALLBACK2D] Estableciendo libro destacado:', settings.featuredBookId.title)
             loadedFeaturedBook = settings.featuredBookId
             setFeaturedBook(settings.featuredBookId)
             setCurrentRating(settings.featuredBookId.rating || 0)
             setTotalRatings(settings.featuredBookId.totalRatings || 0)
+          } else {
+            console.log('[FALLBACK2D] No hay libro destacado en settings')
           }
         }
+      } else {
+        console.error('[FALLBACK2D] Error al cargar settings:', settingsRes.status)
       }
       
       // Cargar todos los libros
