@@ -78,18 +78,27 @@ export function Fallback2D() {
       console.log('[FALLBACK2D] Cargando configuración de home...')
       console.log('[FALLBACK2D] Timestamp:', new Date().toISOString())
       
-      // IMPORTANTE: Forzar recarga sin caché
-      const settingsRes = await fetch('/api/public/home-settings', {
+      // IMPORTANTE: Forzar recarga sin caché añadiendo timestamp único
+      const timestamp = Date.now()
+      const settingsUrl = `/api/public/home-settings?t=${timestamp}&_=${Math.random()}`
+      console.log('[FALLBACK2D] URL con cache buster:', settingsUrl)
+      
+      const settingsRes = await fetch(settingsUrl, {
+        method: 'GET',
         cache: 'no-store',
         headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         }
       })
       console.log('[FALLBACK2D] Response status:', settingsRes.status)
+      console.log('[FALLBACK2D] Response headers:', Object.fromEntries(settingsRes.headers.entries()))
       
       if (settingsRes.ok) {
-        const { settings } = await settingsRes.json()
+        const responseText = await settingsRes.text()
+        console.log('[FALLBACK2D] Response length:', responseText.length)
+        const { settings } = JSON.parse(responseText)
         console.log('[FALLBACK2D] Settings recibidos:', settings)
         console.log('[FALLBACK2D] Featured book:', settings?.featuredBookId)
         console.log('[FALLBACK2D] Header title:', settings?.headerTitle)
