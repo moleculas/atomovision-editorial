@@ -62,18 +62,8 @@ export function Fallback2D() {
   // Verificar si el libro tiene chat habilitado
   useEffect(() => {
     if (featuredBook && (featuredBook as any)._id) {
-      // Log para debug en producción
-      console.log('[FALLBACK2D] Verificando chat para libro:', {
-        id: (featuredBook as any)._id,
-        title: featuredBook.title,
-        hasN8nConfig: !!(featuredBook as any).n8nConfig,
-        webhookUrl: (featuredBook as any).n8nConfig?.webhookUrl,
-        fullN8nConfig: (featuredBook as any).n8nConfig
-      })
-      
       // Verificar si el libro tiene configuración N8N
       const hasWebhook = !!(featuredBook as any).n8nConfig?.webhookUrl
-      console.log('[FALLBACK2D] Chat habilitado:', hasWebhook)
       setChatEnabled(hasWebhook)
     }
   }, [featuredBook])
@@ -88,14 +78,6 @@ export function Fallback2D() {
       const settingsRes = await fetch('/api/public/home-settings')
       if (settingsRes.ok) {
         const { settings } = await settingsRes.json()
-        console.log('[FALLBACK2D] Settings recibidos:', {
-          hasSettings: !!settings,
-          hasFeaturedBook: !!settings?.featuredBookId,
-          featuredBookTitle: settings?.featuredBookId?.title,
-          hasN8nConfig: !!settings?.featuredBookId?.n8nConfig,
-          n8nConfigDetails: settings?.featuredBookId?.n8nConfig
-        })
-        
         if (settings) {
           setHomeSettings({
             headerTitle: settings.headerTitle || 'AtomoVisión',

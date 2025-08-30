@@ -10,7 +10,7 @@ export function Footer() {
           <div>
             <h3 className="font-playfair text-lg font-bold mb-4">AtomoVisión</h3>
             <p className="text-sm text-muted-foreground">
-              Una experiencia única de compra de libros en un entorno 3D inmersivo.
+              Editorial digital pionera en libros de ciencia ficción y fantasía generados por inteligencia artificial.
             </p>
           </div>
 
@@ -24,13 +24,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/collections" className="hover:text-primary transition-colors">
-                  Colecciones
-                </Link>
-              </li>
-              <li>
-                <Link href="/about" className="hover:text-primary transition-colors">
-                  Sobre nosotros
+                <Link href="/editorial" className="hover:text-primary transition-colors">
+                  Editorial
                 </Link>
               </li>
               <li>

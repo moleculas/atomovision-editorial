@@ -127,11 +127,11 @@ export function Header() {
             <Link href="/catalog" className="hover:text-primary transition-colors">
               Catálogo
             </Link>
-            <Link href="/collections" className="hover:text-primary transition-colors">
-              Colecciones
-            </Link>
             <Link href="/editorial" className="hover:text-primary transition-colors">
               Editorial
+            </Link>
+            <Link href="/contact" className="hover:text-primary transition-colors">
+              Contacto
             </Link>
           </nav>
 
@@ -282,18 +282,18 @@ export function Header() {
                 Catálogo
               </Link>
               <Link
-                href="/collections"
-                className="block hover:text-primary transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Colecciones
-              </Link>
-              <Link
                 href="/editorial"
                 className="block hover:text-primary transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Editorial
+              </Link>
+              <Link
+                href="/contact"
+                className="block hover:text-primary transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Contacto
               </Link>
 
             </nav>

@@ -25,15 +25,6 @@ function buildFileUrl(path: string | undefined, type: 'epubs' | 'portadas'): str
 function transformBookForFrontend(book: any) {
   if (!book) return null
   
-  // Log para debug en producción
-  console.log('[HOME-SETTINGS] Transformando libro:', {
-    id: book._id?.toString(),
-    title: book.title,
-    hasN8nConfig: !!book.n8nConfig,
-    n8nConfigWebhook: book.n8nConfig?.webhookUrl,
-    n8nConfigAgentId: book.n8nConfig?.agentId
-  })
-  
   return {
     id: book._id.toString(),
     _id: book._id.toString(), // Por compatibilidad
@@ -86,14 +77,6 @@ export async function GET(request: NextRequest) {
         }
       })
       .lean() as any // Convertir a objeto plano para evitar problemas de serialización
-    
-    console.log('[HOME-SETTINGS API] Settings encontrados:', {
-      hasSettings: !!settings,
-      hasFeaturedBook: !!settings?.featuredBookId,
-      featuredBookId: settings?.featuredBookId?._id,
-      featuredBookTitle: settings?.featuredBookId?.title,
-      featuredBookN8nConfig: settings?.featuredBookId?.n8nConfig
-    })
     
     if (!settings) {
       // Retornar configuración por defecto
