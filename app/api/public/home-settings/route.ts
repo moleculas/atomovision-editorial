@@ -65,6 +65,7 @@ function transformBookForFrontend(book: any) {
 export async function GET(request: NextRequest) {
   try {
     console.log('[PUBLIC HOME-SETTINGS] Iniciando obtención de configuración')
+    console.log('[PUBLIC HOME-SETTINGS] Timestamp:', new Date().toISOString())
     
     await connectMongoose()
     console.log('[PUBLIC HOME-SETTINGS] MongoDB conectado')
@@ -73,41 +74,23 @@ export async function GET(request: NextRequest) {
     ensureModelsAreRegistered()
     console.log('[PUBLIC HOME-SETTINGS] Modelos registrados')
 
-    // Buscar la configuración
+    // IMPORTANTE: Forzar lectura fresca de la base de datos
+    // Buscar la configuración sin caché
     console.log('[PUBLIC HOME-SETTINGS] Buscando HomeSettings...')
-    let settings = await HomeSettings.findOne()
-    
-    console.log('[PUBLIC HOME-SETTINGS] Settings sin populate:', settings)
-    console.log('[PUBLIC HOME-SETTINGS] featuredBookId en settings:', settings?.featuredBookId)
-    
-    // Si hay un featuredBookId, hacer populate manualmente
-    if (settings && settings.featuredBookId) {
-      console.log('[PUBLIC HOME-SETTINGS] Haciendo populate del libro...')
-      settings = await HomeSettings.findOne()
-        .populate({
-          path: 'featuredBookId',
-          populate: {
-            path: 'genre'
-          }
-        })
-        .lean() as any
-      
-      console.log('[PUBLIC HOME-SETTINGS] Settings con populate completo')
-      console.log('[PUBLIC HOME-SETTINGS] Libro populated:', !!settings?.featuredBookId)
-      console.log('[PUBLIC HOME-SETTINGS] Tipo de featuredBookId:', typeof settings?.featuredBookId)
-      
-      // Si featuredBookId es solo un ID, intentar cargar el libro manualmente
-      if (settings?.featuredBookId && typeof settings.featuredBookId === 'string') {
-        console.log('[PUBLIC HOME-SETTINGS] featuredBookId es string, cargando libro manualmente')
-        const book = await Book.findById(settings.featuredBookId).populate('genre').lean() as any
-        console.log('[PUBLIC HOME-SETTINGS] Libro cargado manualmente:', book?.title)
-        settings.featuredBookId = book
-      }
-    }
+    const settings = await HomeSettings.findOne()
+      .populate({
+        path: 'featuredBookId',
+        populate: {
+          path: 'genre'
+        }
+      })
+      .lean()
+      .exec() as any
     
     console.log('[PUBLIC HOME-SETTINGS] Settings encontrados:', !!settings)
     console.log('[PUBLIC HOME-SETTINGS] Featured book ID:', settings?.featuredBookId?._id)
     console.log('[PUBLIC HOME-SETTINGS] Featured book title:', settings?.featuredBookId?.title)
+    console.log('[PUBLIC HOME-SETTINGS] Header title:', settings?.headerTitle)
     
     if (!settings) {
       console.log('[PUBLIC HOME-SETTINGS] No hay settings, retornando valores por defecto')
@@ -124,6 +107,12 @@ export async function GET(request: NextRequest) {
             question4: 'Ponte en la piel del protagonista'
           }
         }
+      }, {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
       })
     }
 
@@ -137,8 +126,19 @@ export async function GET(request: NextRequest) {
       featuredBookId: transformedBook
     }
 
-    console.log('[PUBLIC HOME-SETTINGS] Enviando respuesta')
-    return NextResponse.json({ settings: transformedSettings })
+    console.log('[PUBLIC HOME-SETTINGS] Enviando respuesta con no-cache headers')
+    
+    // IMPORTANTE: Añadir headers para evitar caché
+    return NextResponse.json(
+      { settings: transformedSettings },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      }
+    )
   } catch (error) {
     console.error('Error al obtener configuración de home:', error)
     return NextResponse.json(

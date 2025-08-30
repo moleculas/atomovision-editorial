@@ -76,13 +76,23 @@ export function Fallback2D() {
       
       // Cargar configuración de la home
       console.log('[FALLBACK2D] Cargando configuración de home...')
-      const settingsRes = await fetch('/api/public/home-settings')
+      console.log('[FALLBACK2D] Timestamp:', new Date().toISOString())
+      
+      // IMPORTANTE: Forzar recarga sin caché
+      const settingsRes = await fetch('/api/public/home-settings', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      })
       console.log('[FALLBACK2D] Response status:', settingsRes.status)
       
       if (settingsRes.ok) {
         const { settings } = await settingsRes.json()
         console.log('[FALLBACK2D] Settings recibidos:', settings)
         console.log('[FALLBACK2D] Featured book:', settings?.featuredBookId)
+        console.log('[FALLBACK2D] Header title:', settings?.headerTitle)
         
         if (settings) {
           setHomeSettings({
