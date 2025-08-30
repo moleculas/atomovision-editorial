@@ -86,10 +86,10 @@ export async function GET(request: NextRequest) {
           headerTitle: 'AtomoVisión',
           headerDescription: 'AtomoVisión es una editorial digital que utiliza inteligencia artificial para crear libros únicos de ciencia ficción y fantasía. Cada obra es una experiencia literaria original que explora nuevos mundos e historias.',
           chatQuestions: {
-            question1: '¿Cómo es el mundo donde vives?',
-            question2: '¿Cuál es tu mayor miedo?',
-            question3: 'Cuéntame sobre los otros personajes',
-            question4: '¿Qué secretos guardas?'
+            question1: '¿Cuáles son los secretos mejor guardados de este mundo?',
+            question2: '¿Qué fuerzas o poderes mueven este universo?',
+            question3: '¿Cómo era este mundo antes de que comenzara la historia?',
+            question4: 'Ponte en la piel del protagonista'
           }
         }
       })

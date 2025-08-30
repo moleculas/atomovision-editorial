@@ -43,23 +43,40 @@ if (!cached.mongoose) {
 }
 
 async function connectMongoose() {
+  console.log('[MONGOOSE] connectMongoose llamado')
+  console.log('[MONGOOSE] Estado actual:', mongoose.connection.readyState)
+  console.log('[MONGOOSE] Cached conn existe:', !!cached.mongoose?.conn)
+  console.log('[MONGOOSE] Cached promise existe:', !!cached.mongoose?.promise)
+  
   if (cached.mongoose?.conn) {
+    console.log('[MONGOOSE] Retornando conexión cacheada')
     return cached.mongoose.conn
   }
 
   if (!cached.mongoose?.promise) {
+    console.log('[MONGOOSE] Creando nueva promesa de conexión')
+    console.log('[MONGOOSE] URI length:', uri?.length)
+    console.log('[MONGOOSE] URI starts with:', uri?.substring(0, 30) + '...')
+    
     const opts = {
       bufferCommands: false,
     }
 
     cached.mongoose!.promise = mongoose.connect(uri!, opts).then((mongoose) => {
+      console.log('[MONGOOSE] Conexión exitosa')
       return mongoose
+    }).catch((error) => {
+      console.error('[MONGOOSE] Error en conexión:', error)
+      throw error
     })
   }
 
   try {
+    console.log('[MONGOOSE] Esperando promesa de conexión...')
     cached.mongoose!.conn = await cached.mongoose!.promise
+    console.log('[MONGOOSE] Conexión establecida y cacheada')
   } catch (e) {
+    console.error('[MONGOOSE] Error al establecer conexión:', e)
     cached.mongoose!.promise = null
     throw e
   }

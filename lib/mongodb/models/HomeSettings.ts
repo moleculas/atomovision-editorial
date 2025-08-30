@@ -32,19 +32,19 @@ const HomeSettingsSchema = new Schema<IHomeSettings>({
   chatQuestions: {
     question1: {
       type: String,
-      default: '¿Cómo es el mundo donde vives?'
+      default: '¿Cuáles son los secretos mejor guardados de este mundo?'
     },
     question2: {
       type: String,
-      default: '¿Cuál es tu mayor miedo?'
+      default: '¿Qué fuerzas o poderes mueven este universo?'
     },
     question3: {
       type: String,
-      default: 'Cuéntame sobre los otros personajes'
+      default: '¿Cómo era este mundo antes de que comenzara la historia?'
     },
     question4: {
       type: String,
-      default: '¿Qué secretos guardas?'
+      default: 'Ponte en la piel del protagonista'
     }
   },
   updatedBy: {
@@ -57,6 +57,12 @@ const HomeSettingsSchema = new Schema<IHomeSettings>({
 
 // No necesitamos índice en _id, MongoDB lo crea automáticamente
 
+// Log para debugging
+console.log('[HOME-SETTINGS MODEL] Registrando modelo HomeSettings')
+console.log('[HOME-SETTINGS MODEL] Modelo ya existe:', !!models.HomeSettings)
+
 const HomeSettings = models.HomeSettings || model<IHomeSettings>('HomeSettings', HomeSettingsSchema)
+
+console.log('[HOME-SETTINGS MODEL] Modelo registrado correctamente')
 
 export default HomeSettings

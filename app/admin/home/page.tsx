@@ -133,6 +133,11 @@ export default function EditHomePage() {
   const handleSave = async () => {
     try {
       setSaving(true)
+      
+      console.log('[HOME PAGE] Guardando configuración...')
+      console.log('[HOME PAGE] Settings a enviar:', JSON.stringify(settings, null, 2))
+      console.log('[HOME PAGE] featuredBookId:', settings.featuredBookId)
+      console.log('[HOME PAGE] featuredBookId type:', typeof settings.featuredBookId)
 
       const res = await fetch('/api/admin/home-settings', {
         method: 'PUT',
@@ -142,15 +147,21 @@ export default function EditHomePage() {
         credentials: 'include',
         body: JSON.stringify(settings),
       })
+      
+      console.log('[HOME PAGE] Response status:', res.status)
+      console.log('[HOME PAGE] Response headers:', Object.fromEntries(res.headers.entries()))
 
       if (res.ok) {
+        const responseData = await res.json()
+        console.log('[HOME PAGE] Response data:', responseData)
         setToast({ message: 'Configuración guardada correctamente', type: 'success' })
       } else {
         const errorData = await res.json()
-        setToast({ message: 'Error al guardar la configuración', type: 'error' })
+        console.error('[HOME PAGE] Error response:', errorData)
+        setToast({ message: errorData.error || 'Error al guardar la configuración', type: 'error' })
       }
     } catch (error) {
-      console.error('Error:', error)
+      console.error('[HOME PAGE] Error completo:', error)
       setToast({ message: 'Error al guardar la configuración', type: 'error' })
     } finally {
       setSaving(false)
