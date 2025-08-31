@@ -8,8 +8,6 @@ export const maxDuration = 30 // segundos
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('API /api/public/books - Iniciando')
-    
     // Intentar conectar con reintentos
     let connected = false
     let retries = 3
@@ -18,7 +16,6 @@ export async function GET(request: NextRequest) {
       try {
         await connectMongoose()
         connected = true
-        console.log('API /api/public/books - MongoDB conectado')
       } catch (error) {
         console.error(`Error conectando a MongoDB, reintento ${4 - retries}/3:`, error)
         retries--

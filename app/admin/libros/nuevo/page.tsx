@@ -127,6 +127,13 @@ export default function NewBookPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    
+    // Validar número de páginas
+    if (!formData.pageCount || formData.pageCount < 1) {
+      alert('El número de páginas es obligatorio y debe ser mayor a 0')
+      return
+    }
+    
     setLoading(true)
     
     try {
@@ -347,14 +354,16 @@ export default function NewBookPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Número de páginas
+                  Número de páginas *
                 </label>
                 <input
                   type="number"
+                  required
                   min="1"
                   value={formData.pageCount || ''}
                   onChange={(e) => handleInputChange('pageCount', e.target.value ? parseInt(e.target.value) : 0)}
                   className="w-full px-4 py-2 bg-[#faf9f7] border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  placeholder="Número de páginas del libro"
                 />
               </div>
               

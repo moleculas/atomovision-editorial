@@ -68,26 +68,13 @@ export const revalidate = 0 // No cachear nunca
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('[PUBLIC HOME-SETTINGS] ===================================')
-    console.log('[PUBLIC HOME-SETTINGS] Iniciando obtención de configuración')
-    console.log('[PUBLIC HOME-SETTINGS] Timestamp:', new Date().toISOString())
-    console.log('[PUBLIC HOME-SETTINGS] URL:', request.url)
-    
     // Desconectar y reconectar para forzar datos frescos
-    if (mongoose.connection.readyState === 1) {
-      console.log('[PUBLIC HOME-SETTINGS] Mongoose ya conectado, usando conexión existente')
-    }
-    
     await connectMongoose()
-    console.log('[PUBLIC HOME-SETTINGS] MongoDB conectado, estado:', mongoose.connection.readyState)
     
     // Asegurar que todos los modelos estén registrados
     ensureModelsAreRegistered()
-    console.log('[PUBLIC HOME-SETTINGS] Modelos registrados')
 
     // IMPORTANTE: Forzar lectura fresca de la base de datos
-    console.log('[PUBLIC HOME-SETTINGS] Buscando HomeSettings...')
-    
     // Usar aggregate para evitar cualquier caché de Mongoose
     const settingsArray = await HomeSettings.aggregate([
       { $match: {} },
@@ -128,14 +115,7 @@ export async function GET(request: NextRequest) {
     
     const settings = settingsArray[0]
     
-    console.log('[PUBLIC HOME-SETTINGS] Settings encontrados:', !!settings)
-    console.log('[PUBLIC HOME-SETTINGS] Featured book ID:', settings?.featuredBook?._id)
-    console.log('[PUBLIC HOME-SETTINGS] Featured book title:', settings?.featuredBook?.title)
-    console.log('[PUBLIC HOME-SETTINGS] Header title:', settings?.headerTitle)
-    console.log('[PUBLIC HOME-SETTINGS] ===================================')
-    
     if (!settings) {
-      console.log('[PUBLIC HOME-SETTINGS] No hay settings, retornando valores por defecto')
       // Retornar configuración por defecto
       return NextResponse.json({ 
         settings: {
@@ -159,9 +139,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Transformar el libro destacado si existe
-    console.log('[PUBLIC HOME-SETTINGS] Transformando libro destacado...')
     const transformedBook = transformBookForFrontend(settings?.featuredBook) // Cambio: featuredBook en lugar de featuredBookId
-    console.log('[PUBLIC HOME-SETTINGS] Libro transformado:', transformedBook?.title)
     
     const transformedSettings = {
       _id: settings._id,
@@ -173,8 +151,6 @@ export async function GET(request: NextRequest) {
       updatedBy: settings.updatedBy
     }
 
-    console.log('[PUBLIC HOME-SETTINGS] Enviando respuesta con no-cache headers')
-    
     // IMPORTANTE: Añadir headers para evitar caché
     return NextResponse.json(
       { settings: transformedSettings },

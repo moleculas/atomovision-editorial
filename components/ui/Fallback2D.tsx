@@ -75,13 +75,9 @@ export function Fallback2D() {
       let loadedFeaturedBook = null
       
       // Cargar configuración de la home
-      console.log('[FALLBACK2D] Cargando configuración de home...')
-      console.log('[FALLBACK2D] Timestamp:', new Date().toISOString())
-      
       // IMPORTANTE: Forzar recarga sin caché añadiendo timestamp único
       const timestamp = Date.now()
       const settingsUrl = `/api/public/home-settings?t=${timestamp}&_=${Math.random()}`
-      console.log('[FALLBACK2D] URL con cache buster:', settingsUrl)
       
       const settingsRes = await fetch(settingsUrl, {
         method: 'GET',
@@ -92,16 +88,10 @@ export function Fallback2D() {
           'Expires': '0'
         }
       })
-      console.log('[FALLBACK2D] Response status:', settingsRes.status)
-      console.log('[FALLBACK2D] Response headers:', Object.fromEntries(settingsRes.headers.entries()))
       
       if (settingsRes.ok) {
         const responseText = await settingsRes.text()
-        console.log('[FALLBACK2D] Response length:', responseText.length)
         const { settings } = JSON.parse(responseText)
-        console.log('[FALLBACK2D] Settings recibidos:', settings)
-        console.log('[FALLBACK2D] Featured book:', settings?.featuredBookId)
-        console.log('[FALLBACK2D] Header title:', settings?.headerTitle)
         
         if (settings) {
           setHomeSettings({
@@ -112,13 +102,10 @@ export function Fallback2D() {
           
           // Si hay un libro destacado configurado, usarlo
           if (settings.featuredBookId) {
-            console.log('[FALLBACK2D] Estableciendo libro destacado:', settings.featuredBookId.title)
             loadedFeaturedBook = settings.featuredBookId
             setFeaturedBook(settings.featuredBookId)
             setCurrentRating(settings.featuredBookId.rating || 0)
             setTotalRatings(settings.featuredBookId.totalRatings || 0)
-          } else {
-            console.log('[FALLBACK2D] No hay libro destacado en settings')
           }
         }
       } else {

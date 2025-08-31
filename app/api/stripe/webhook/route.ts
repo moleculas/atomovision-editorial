@@ -12,8 +12,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 // IMPORTANTE: Este endpoint debe recibir el body RAW, no parseado
 export async function POST(request: NextRequest) {
-  console.log('=== WEBHOOK STRIPE RECIBIDO ===')
-  
   try {
     // Obtener el body como texto
     const body = await request.text()
@@ -22,7 +20,6 @@ export async function POST(request: NextRequest) {
     const signature = headers().get('stripe-signature')
     
     if (!signature) {
-      console.error('No se encontró stripe-signature')
       return NextResponse.json(
         { error: 'No signature' },
         { status: 400 }
@@ -48,7 +45,6 @@ export async function POST(request: NextRequest) {
         signature,
         webhookSecret
       )
-      console.log('Evento verificado:', event.type)
     } catch (err) {
       console.error('Error verificando webhook:', err)
       return NextResponse.json(
@@ -64,7 +60,6 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
-        console.log('Checkout completado:', session.id)
         
         // Buscar la compra por session ID
         const purchase = await Purchase.findOne({ 
@@ -72,7 +67,6 @@ export async function POST(request: NextRequest) {
         }).populate('items.book')
         
         if (!purchase) {
-          console.error('Compra no encontrada para session:', session.id)
           return NextResponse.json(
             { error: 'Purchase not found' },
             { status: 404 }
@@ -84,22 +78,16 @@ export async function POST(request: NextRequest) {
         purchase.stripePaymentIntentId = session.payment_intent as string
         await purchase.save()
         
-        console.log('Compra actualizada:', purchase._id)
-        
         // Incrementar ventas de cada libro
-        console.log('Actualizando contadores de ventas...')
         for (const item of purchase.items) {
           await Book.findByIdAndUpdate(item.book._id, {
             $inc: { 'stats.downloads': item.quantity }
           })
-          console.log(`Ventas actualizadas para libro ${item.book._id}`)
         }
         
         // Enviar email con enlaces de descarga
         try {
-          console.log('Preparando envío de email...')
           await sendPurchaseEmail(purchase)
-          console.log('Email enviado exitosamente a:', purchase.email)
         } catch (emailError) {
           console.error('Error enviando email:', emailError)
           // No fallar el webhook por error de email
@@ -113,7 +101,6 @@ export async function POST(request: NextRequest) {
       
       case 'checkout.session.expired': {
         const session = event.data.object as Stripe.Checkout.Session
-        console.log('Sesión expirada:', session.id)
         
         // Marcar la compra como fallida
         await Purchase.findOneAndUpdate(
@@ -126,7 +113,6 @@ export async function POST(request: NextRequest) {
       
       case 'payment_intent.payment_failed': {
         const paymentIntent = event.data.object as Stripe.PaymentIntent
-        console.log('Pago fallido:', paymentIntent.id)
         
         // Marcar la compra como fallida
         await Purchase.findOneAndUpdate(
@@ -138,7 +124,7 @@ export async function POST(request: NextRequest) {
       }
       
       default:
-        console.log(`Evento no manejado: ${event.type}`)
+        // Evento no manejado
     }
     
     // Responder a Stripe que recibimos el webhook
