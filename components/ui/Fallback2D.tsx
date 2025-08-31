@@ -9,6 +9,41 @@ import { useCartStore } from '@/lib/store'
 import { ShoppingCart, Eye, Star, ChevronLeft, ChevronRight, BookOpen, Sparkles, Info, Send, Settings } from 'lucide-react'
 import { bookService } from '@/lib/services/book.service'
 
+// Función para procesar formato Markdown básico
+function processMarkdownText(text: string): string {
+  let processedText = text
+  
+  // 1. Negrita con triple asterisco (***texto***) para negrita + cursiva
+  processedText = processedText.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+  
+  // 2. Negrita con doble asterisco (**texto**) o doble guión bajo (__texto__)
+  processedText = processedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+  processedText = processedText.replace(/__(.*?)__/g, '<strong>$1</strong>')
+  
+  // 3. Cursiva con asterisco simple (*texto*) o guión bajo simple (_texto_)
+  // Cuidado: solo si no está precedido/seguido por otro asterisco
+  processedText = processedText.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>')
+  processedText = processedText.replace(/(?<!_)_([^_]+)_(?!_)/g, '<em>$1</em>')
+  
+  // 4. Código inline con backticks (`código`)
+  processedText = processedText.replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 bg-gray-100 rounded text-xs">$1</code>')
+  
+  // 5. Tachado con doble tilde (~~texto~~)
+  processedText = processedText.replace(/~~(.*?)~~/g, '<del>$1</del>')
+  
+  // 6. Saltos de línea (\n o doble espacio al final)
+  processedText = processedText.replace(/\n/g, '<br />')
+  
+  // 7. Enlaces básicos [texto](url)
+  processedText = processedText.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary hover:underline" target="_blank" rel="noopener noreferrer">$1</a>')
+  
+  // 8. Listas con guiones (- item)
+  processedText = processedText.replace(/^- (.+)$/gm, '<li class="ml-4">$1</li>')
+  processedText = processedText.replace(/(<li.*?<\/li>\s*)+/g, '<ul class="list-disc pl-4">$&</ul>')
+  
+  return processedText
+}
+
 export function Fallback2D() {
   const [featuredBook, setFeaturedBook] = useState<Book | null>(null)
   const [newBooks, setNewBooks] = useState<Book[]>([])
@@ -495,9 +530,9 @@ export function Fallback2D() {
                             <p className="text-sm font-medium mb-1">
                               {message.role === 'user' ? 'Tú' : 'Narrador'}
                             </p>
-                            <p className="text-sm text-gray-600">
-                              {message.content}
-                            </p>
+                            <div className="text-sm text-gray-600">
+                              <span dangerouslySetInnerHTML={{ __html: processMarkdownText(message.content) }} />
+                            </div>
                           </div>
                         </div>
                       ))}
