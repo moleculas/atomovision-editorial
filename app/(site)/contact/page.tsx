@@ -213,10 +213,10 @@ export default function ContactPage() {
             <p className="text-sm text-muted-foreground">
               También puedes escribirnos a{' '}
               <a
-                href="mailto:contacto@atomovision.com"
+                href="mailto:info@atomovision.es"
                 className="text-primary hover:underline"
               >
-                contacto@atomovision.com
+                info@atomovision.es
               </a>
             </p>
             <p className="mt-2 text-xs text-muted-foreground">

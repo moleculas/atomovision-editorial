@@ -21,19 +21,19 @@ export async function sendEmail({
     if (!process.env.RESEND_API_KEY) {
       throw new Error('RESEND_API_KEY no está configurada')
     }
-    
+
     let html = ''
-    
+
     switch (template) {
       case 'contact':
         try {
           // Intentar usar React Email con el método render oficial
           const rendered = render(ContactEmail(data))
-          
+
           // Si es una promesa, esperarla
           if (rendered instanceof Promise) {
             const result = await rendered as any
-            
+
             if (typeof result === 'object' && result.html) {
               html = result.html
             } else if (typeof result === 'string') {
@@ -69,7 +69,7 @@ export async function sendEmail({
       default:
         throw new Error(`Template desconocido: ${template}`)
     }
-    
+
     // Verificar que html sea un string válido
     if (!html || typeof html !== 'string') {
       throw new Error('Failed to render email template')
@@ -77,14 +77,14 @@ export async function sendEmail({
 
     // Enviar email
     const from = process.env.EMAIL_FROM || 'AtomoVisión <onboarding@resend.dev>'
-    
+
     const result = await resend.emails.send({
       from,
       to,
       subject,
       html,
     })
-    
+
     // Verificar si hay error en la respuesta
     if (result.error) {
       throw new Error(result.error.message || 'Error al enviar email')
@@ -104,7 +104,7 @@ export async function sendContactEmail(data: {
   message: string
 }) {
   return sendEmail({
-    to: process.env.CONTACT_EMAIL || 'contacto@atomovision.com',
+    to: process.env.CONTACT_EMAIL || 'info@atomovision.es',
     subject: `[Contacto Web] ${data.subject}`,
     template: 'contact',
     data,

@@ -33,7 +33,7 @@ RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxx
 EMAIL_FROM=AtomoVisión <onboarding@resend.dev>
 
 # Email donde llegan los mensajes de contacto
-CONTACT_EMAIL=contacto@atomovision.com
+CONTACT_EMAIL=info@atomovision.es
 ```
 
 ### Configuración para Producción
