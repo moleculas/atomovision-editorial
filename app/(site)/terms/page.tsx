@@ -160,7 +160,7 @@ export default function TermsPage() {
             </ul>
             <p className="text-lg leading-relaxed mb-4">
               <strong>6.3 Problemas de descarga:</strong> Si experimentas problemas con las descargas dentro del período 
-              válido, contacta con nosotros a través de atomovisionweb@gmail.com con tu número de pedido.
+              válido, contacta con nosotros a través de info@atomovision.es con tu número de pedido.
             </p>
           </div>
 
@@ -292,7 +292,7 @@ export default function TermsPage() {
               <strong>12.1 Contacto:</strong> Para cualquier consulta sobre estos términos o nuestros servicios:
             </p>
             <ul className="space-y-2 mb-6 ml-6">
-              <li className="text-lg">Email: atomovisionweb@gmail.com</li>
+              <li className="text-lg">Email: info@atomovision.es</li>
               <li className="text-lg">Formulario: www.atomovision.es/contact</li>
             </ul>
             <p className="text-lg leading-relaxed mb-4">

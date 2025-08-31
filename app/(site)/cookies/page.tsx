@@ -319,7 +319,7 @@ export default function CookiesPage() {
               Si tienes preguntas sobre nuestra política de cookies o cómo gestionamos estos datos:
             </p>
             <ul className="space-y-2 mb-6 ml-6">
-              <li className="text-lg">Email: atomovisionweb@gmail.com</li>
+              <li className="text-lg">Email: info@atomovision.es</li>
               <li className="text-lg">Formulario: www.atomovision.es/contact</li>
               <li className="text-lg">Asunto: &quot;Cookies - [Tu consulta]&quot;</li>
             </ul>

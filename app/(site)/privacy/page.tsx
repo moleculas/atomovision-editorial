@@ -40,7 +40,7 @@ export default function PrivacyPage() {
             <p className="text-lg leading-relaxed mb-4">
               <strong>Responsable:</strong> AtomoVisión<br />
               <strong>Dominio web:</strong> www.atomovision.es<br />
-              <strong>Email de contacto:</strong> atomovisionweb@gmail.com<br />
+              <strong>Email de contacto:</strong> info@atomovision.es<br />
               <strong>Actividad:</strong> Editorial digital especializada en libros de ciencia ficción y fantasía generados con IA
             </p>
           </div>
@@ -444,7 +444,7 @@ export default function PrivacyPage() {
               </li>
             </ul>
             <p className="text-lg leading-relaxed mb-4">
-              Para ejercer estos derechos, contáctanos en atomovisionweb@gmail.com. Responderemos a tu solicitud 
+              Para ejercer estos derechos, contáctanos en info@atomovision.es. Responderemos a tu solicitud 
               en un plazo máximo de 30 días. Podemos solicitar información adicional para verificar tu identidad.
             </p>
           </div>
@@ -514,7 +514,7 @@ export default function PrivacyPage() {
               <strong>14.1 Contacto directo:</strong> Para cualquier consulta sobre privacidad o para ejercer tus derechos:
             </p>
             <ul className="space-y-2 mb-6 ml-6">
-              <li className="text-lg">Email: atomovisionweb@gmail.com</li>
+              <li className="text-lg">Email: info@atomovision.es</li>
               <li className="text-lg">Formulario: www.atomovision.es/contact</li>
               <li className="text-lg">Asunto: &quot;Privacidad - [Tu consulta]&quot;</li>
             </ul>

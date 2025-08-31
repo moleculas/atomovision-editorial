@@ -60,7 +60,7 @@ export async function sendPurchaseEmail(purchase: Purchase) {
           })),
           totalAmount: purchase.totalAmount,
           downloadLinks,
-          supportEmail: process.env.CONTACT_EMAIL || 'atomovisionweb@gmail.com'
+          supportEmail: process.env.CONTACT_EMAIL || 'info@atomovision.es'
         }),
       })
 
@@ -71,10 +71,10 @@ export async function sendPurchaseEmail(purchase: Purchase) {
       return { success: true, data }
     } catch (reactEmailError) {
       console.error('Error con React Email template, usando HTML fallback:', reactEmailError)
-      
+
       // Fallback a HTML simple
       const htmlContent = generateFallbackHTML(purchase, downloadLinks)
-      
+
       const { data, error } = await resend.emails.send({
         from: process.env.EMAIL_FROM || 'AtomoVisión <onboarding@resend.dev>',
         to: purchase.email,

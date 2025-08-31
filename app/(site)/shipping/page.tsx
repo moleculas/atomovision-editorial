@@ -133,7 +133,7 @@ export default function ShippingPage() {
                 </li>
                 <li className="flex items-start">
                   <span className="text-primary mr-2 font-bold">3.</span>
-                  <span className="text-lg">Añade atomovisionweb@gmail.com a tu lista de contactos</span>
+                  <span className="text-lg">Añade info@atomovision.es a tu lista de contactos</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-primary mr-2 font-bold">4.</span>
@@ -146,7 +146,7 @@ export default function ShippingPage() {
               <h3 className="text-xl font-bold mb-3">2.2 El enlace ha expirado</h3>
               <p className="text-lg leading-relaxed mb-4">
                 Si tu enlace ha expirado (más de 7 días) o has superado el límite de descargas, 
-                contáctanos en atomovisionweb@gmail.com con:
+                contáctanos en info@atomovision.es con:
               </p>
               <ul className="space-y-2 mb-6 ml-6">
                 <li className="flex items-start">
@@ -336,7 +336,7 @@ export default function ShippingPage() {
             </p>
             <div className="bg-primary/10 border-l-4 border-primary p-6 md:p-8 rounded-r-lg">
               <ul className="space-y-2">
-                <li className="text-lg"><strong>Email:</strong> atomovisionweb@gmail.com</li>
+                <li className="text-lg"><strong>Email:</strong> info@atomovision.es</li>
                 <li className="text-lg"><strong>Asunto sugerido:</strong> &quot;Problema de entrega - [Número de pedido]&quot;</li>
                 <li className="text-lg"><strong>Tiempo de respuesta:</strong> 24-48 horas laborables</li>
                 <li className="text-lg"><strong>Horario de soporte:</strong> Lunes a Viernes, 9:00 - 18:00 (CET)</li>
