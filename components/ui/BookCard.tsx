@@ -172,9 +172,13 @@ export function BookCard({ book, viewMode = 'grid' }: BookCardProps) {
         {book.tags && book.tags.length > 0 && (
           <div className="flex gap-2 mt-3 flex-wrap">
             {book.tags.slice(0, 3).map((tag, index) => (
-              <span key={index} className="text-xs bg-accent px-2 py-1 rounded">
+              <Link 
+                key={index} 
+                href={`/tag/${encodeURIComponent(tag)}`}
+                className="text-xs bg-accent px-2 py-1 rounded hover:bg-accent/80 transition-colors"
+              >
                 {tag}
-              </span>
+              </Link>
             ))}
             {book.tags.length > 3 && (
               <span className="text-xs bg-accent px-2 py-1 rounded">+{book.tags.length - 3}</span>

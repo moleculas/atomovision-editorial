@@ -269,12 +269,13 @@ export function BookDetail({ book }: BookDetailProps) {
                 <h3 className="text-xl font-semibold mb-3">Etiquetas</h3>
                 <div className="flex flex-wrap gap-2">
                   {book.tags.map((tag, index) => (
-                    <span
+                    <Link
                       key={index}
-                      className="px-3 py-1 bg-accent rounded-full text-sm"
+                      href={`/tag/${encodeURIComponent(tag)}`}
+                      className="px-3 py-1 bg-accent rounded-full text-sm hover:bg-accent/80 transition-colors"
                     >
                       {tag}
-                    </span>
+                    </Link>
                   ))}
                 </div>
               </div>
