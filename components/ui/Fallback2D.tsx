@@ -79,6 +79,7 @@ export function Fallback2D() {
   const [chatInput, setChatInput] = useState('')
   const [isChatLoading, setIsChatLoading] = useState(false)
   const [chatEnabled, setChatEnabled] = useState(false)
+  const [sessionId, setSessionId] = useState<string | null>(null)
   
   // Ref para el contenedor de mensajes del chat
   const chatMessagesRef = useRef<HTMLDivElement>(null)
@@ -226,6 +227,21 @@ export function Fallback2D() {
     const messageToSend = message || chatInput.trim()
     if (!messageToSend || isChatLoading || !featuredBook || !chatEnabled) return
     
+    // Gestionar sessionId
+    let currentSessionId = sessionId
+    
+    if (!currentSessionId) {
+      const storageKey = 'atomovision_chat_' + featuredBook.id
+      currentSessionId = localStorage.getItem(storageKey)
+      
+      if (!currentSessionId) {
+        currentSessionId = Date.now() + '_' + Math.random().toString(36).substring(2, 9)
+        localStorage.setItem(storageKey, currentSessionId)
+      }
+      
+      setSessionId(currentSessionId)
+    }
+    
     // Añadir mensaje del usuario
     setChatMessages(prev => [...prev, { role: 'user', content: messageToSend }])
     setChatInput('')
@@ -239,7 +255,8 @@ export function Fallback2D() {
         },
         body: JSON.stringify({
           bookId: (featuredBook as any)._id || featuredBook.id,
-          message: messageToSend
+          message: messageToSend,
+          sessionId: currentSessionId
         })
       })
       

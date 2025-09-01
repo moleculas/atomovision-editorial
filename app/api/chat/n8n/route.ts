@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
     
     const body = await request.json()
-    const { bookId, message } = body
+    const { bookId, message, sessionId } = body
 
     // Validación básica
     if (!bookId || !message) {
@@ -153,6 +153,7 @@ export async function POST(request: NextRequest) {
           message: cleanMessage,
           bookTitle: book.title,
           agentId: book.n8nConfig.agentId || undefined,
+          sessionId: sessionId || undefined,
           timestamp: new Date().toISOString()
         })
       })
