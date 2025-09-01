@@ -466,7 +466,7 @@ export default function NewBookPage() {
               <input
                 type="text"
                 required
-                placeholder="mi-libro.jpg"
+                placeholder="/libros/portadas/mi-libro.jpg"
                 value={formData.cover.original}
                 onChange={(e) => handleNestedChange('cover', 'original', e.target.value)}
                 className="w-full px-4 py-2 bg-[#faf9f7] border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
@@ -482,7 +482,7 @@ export default function NewBookPage() {
               </label>
               <input
                 type="text"
-                placeholder="mi-libro.epub"
+                placeholder="/libros/epubs/mi-libro.epub"
                 value={formData.formats.epub?.fileUrl || ''}
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
