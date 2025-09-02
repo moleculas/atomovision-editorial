@@ -180,7 +180,10 @@ export async function PUT(
     }
     
     // Auto-generar SEO si está vacío
-    if (!body.seo || (!body.seo.metaTitle && !body.seo.metaDescription && !body.seo.keywords)) {
+    if (!body.seo || 
+        (!body.seo.metaTitle && !body.seo.metaDescription && (!body.seo.keywords || body.seo.keywords.length === 0)) ||
+        (body.seo.metaTitle === '' && body.seo.metaDescription === '' && body.seo.keywords.length === 0)
+    ) {
       const seoInput = {
         title: body.title,
         subtitle: body.subtitle,

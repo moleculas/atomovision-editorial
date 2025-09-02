@@ -167,7 +167,10 @@ export async function POST(request: NextRequest) {
     }
     
     // Auto-generar SEO si no se proporciona
-    if (!bookData.seo || (!bookData.seo.metaTitle && !bookData.seo.metaDescription && !bookData.seo.keywords)) {
+    if (!bookData.seo || 
+        (!bookData.seo.metaTitle && !bookData.seo.metaDescription && (!bookData.seo.keywords || bookData.seo.keywords.length === 0)) ||
+        (bookData.seo.metaTitle === '' && bookData.seo.metaDescription === '' && bookData.seo.keywords.length === 0)
+    ) {
       const seoInput = {
         title: bookData.title,
         subtitle: bookData.subtitle,
