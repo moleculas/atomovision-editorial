@@ -3,6 +3,7 @@ import { connectMongoose } from '@/lib/mongodb/client'
 import Book from '@/lib/mongodb/models/Book'
 import Genre from '@/lib/mongodb/models/Genre'
 import { generateSlug } from '@/lib/utils/slugify'
+import { SeoGenerator } from '@/lib/services/seo-generator'
 
 /**
  * GET /api/books/[id]
@@ -176,6 +177,19 @@ export async function PUT(
       
       // Incrementar contador del nuevo género
       await genreExists.incrementBookCount()
+    }
+    
+    // Auto-generar SEO si está vacío
+    if (!body.seo || (!body.seo.metaTitle && !body.seo.metaDescription && !body.seo.keywords)) {
+      const seoInput = {
+        title: body.title,
+        subtitle: body.subtitle,
+        genre: genreExists.name,
+        synopsis: body.synopsis,
+        tags: body.tags || [],
+        authors: body.authors || []
+      }
+      body.seo = SeoGenerator.generateSeo(seoInput)
     }
     
     // Actualizar libro

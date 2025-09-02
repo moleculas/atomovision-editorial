@@ -3,6 +3,7 @@ import { connectMongoose } from '@/lib/mongodb/client'
 import Book from '@/lib/mongodb/models/Book'
 import Genre from '@/lib/mongodb/models/Genre'
 import { generateSlug } from '@/lib/utils/slugify'
+import { SeoGenerator } from '@/lib/services/seo-generator'
 
 /**
  * GET /api/books
@@ -163,6 +164,19 @@ export async function POST(request: NextRequest) {
         rating: 0,
         reviews: 0
       }
+    }
+    
+    // Auto-generar SEO si no se proporciona
+    if (!bookData.seo || (!bookData.seo.metaTitle && !bookData.seo.metaDescription && !bookData.seo.keywords)) {
+      const seoInput = {
+        title: bookData.title,
+        subtitle: bookData.subtitle,
+        genre: genreExists.name,
+        synopsis: bookData.synopsis,
+        tags: bookData.tags || [],
+        authors: bookData.authors || []
+      }
+      bookData.seo = SeoGenerator.generateSeo(seoInput)
     }
     
     // Crear libro

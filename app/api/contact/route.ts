@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      message: 'Mensaje enviado correctamente. Te responderemos pronto.'
+      message: 'Tu mensaje ha sido enviado al Bibliotecario. Te responderá en breve.'
     })
     
   } catch (error) {

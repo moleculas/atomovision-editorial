@@ -68,7 +68,7 @@ export function Footer() {
             <h4 className="font-semibold mb-4">Síguenos</h4>
             <div className="flex space-x-4">
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/AtomovisionEd"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary transition-colors"
@@ -77,7 +77,7 @@ export function Footer() {
                 <Facebook className="w-5 h-5" />
               </a>
               <a
-                href="https://twitter.com"
+                href="https://x.com/AtomovisionEd"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary transition-colors"
@@ -86,7 +86,7 @@ export function Footer() {
                 <Twitter className="w-5 h-5" />
               </a>
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/atomovisioned/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary transition-colors"
@@ -95,7 +95,7 @@ export function Footer() {
                 <Instagram className="w-5 h-5" />
               </a>
               <a
-                href="mailto:info@atomovision.com"
+                href="mailto:info@atomovision.es"
                 className="hover:text-primary transition-colors"
                 aria-label="Email"
               >

@@ -5,8 +5,9 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/api/', '/admin/'],
+      disallow: ['/api/', '/admin/', '/checkout/', '/cart/', '/success/', '/cancel/'],
+      crawlDelay: 1,
     },
-    sitemap: 'https://editorial3d.com/sitemap.xml',
+    sitemap: 'https://www.atomovision.es/sitemap.xml',
   }
 }

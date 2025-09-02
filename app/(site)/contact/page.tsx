@@ -76,9 +76,12 @@ export default function ContactPage() {
         <div className="max-w-2xl mx-auto">
           {/* Header más compacto */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-playfair mb-2">Contacto</h1>
+            <h1 className="text-3xl font-playfair mb-2">Consulta al Bibliotecario</h1>
             <p className="text-muted-foreground">
-              ¿Tienes alguna pregunta? Escríbenos.
+              El Bibliotecario de AtomoVisión está aquí para ayudarte con cualquier consulta sobre nuestro catálogo de mundos literarios.
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Como guardián del conocimiento en AtomoVisión, el Bibliotecario conoce cada rincón de nuestros universos literarios y está siempre dispuesto a guiarte en tu búsqueda del libro perfecto.
             </p>
           </div>
 
@@ -159,7 +162,7 @@ export default function ContactPage() {
                 onChange={handleChange}
                 required
                 className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-                placeholder="¿En qué podemos ayudarte?"
+                placeholder="¿Qué deseas consultar al Bibliotecario?"
               />
             </div>
 
@@ -176,7 +179,7 @@ export default function ContactPage() {
                 required
                 rows={4}
                 className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors resize-none"
-                placeholder="Escribe tu mensaje aquí..."
+                placeholder="Cuéntale al Bibliotecario tu consulta..."
               />
             </div>
 
@@ -211,7 +214,7 @@ export default function ContactPage() {
           {/* Info adicional más compacta */}
           <div className="mt-8 pt-8 border-t text-center">
             <p className="text-sm text-muted-foreground">
-              También puedes escribirnos a{' '}
+              También puedes contactar directamente al Bibliotecario en{' '}
               <a
                 href="mailto:info@atomovision.es"
                 className="text-primary hover:underline"
@@ -220,7 +223,7 @@ export default function ContactPage() {
               </a>
             </p>
             <p className="mt-2 text-xs text-muted-foreground">
-              Respondemos en 48 horas hábiles.
+              El Bibliotecario responde en 48 horas hábiles.
             </p>
           </div>
         </div>

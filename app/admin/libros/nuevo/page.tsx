@@ -51,6 +51,11 @@ interface BookForm {
     webhookUrl: string
     agentId: string
   }
+  seo: {
+    metaTitle: string
+    metaDescription: string
+    keywords: string[]
+  }
 }
 
 export default function NewBookPage() {
@@ -59,6 +64,7 @@ export default function NewBookPage() {
   const [error, setError] = useState('')
   const [genres, setGenres] = useState<any[]>([])
   const [tagInput, setTagInput] = useState('')
+  const [keywordInput, setKeywordInput] = useState('')
   
   const [formData, setFormData] = useState<BookForm>({
     registroAtomoVision: '',
@@ -101,6 +107,11 @@ export default function NewBookPage() {
     n8nConfig: {
       webhookUrl: '',
       agentId: ''
+    },
+    seo: {
+      metaTitle: '',
+      metaDescription: '',
+      keywords: []
     }
   })
   
@@ -646,6 +657,120 @@ export default function NewBookPage() {
               <p className="mt-1 text-xs text-gray-500">
                 Identificador único del agente (opcional)
               </p>
+            </div>
+          </div>
+        </div>
+        
+        {/* SEO y Metadatos */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">SEO y Metadatos</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Si dejas estos campos vacíos, se generarán automáticamente basados en el contenido del libro.
+          </p>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Meta Título
+              </label>
+              <input
+                type="text"
+                placeholder="Se generará automáticamente si se deja vacío"
+                value={formData.seo.metaTitle}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  seo: {
+                    ...prev.seo,
+                    metaTitle: e.target.value
+                  }
+                }))}
+                maxLength={70}
+                className="w-full px-4 py-2 bg-[#faf9f7] border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                {formData.seo.metaTitle.length}/70 caracteres (recomendado: 50-60)
+              </p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Meta Descripción
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Se generará automáticamente basada en la sinopsis si se deja vacío"
+                value={formData.seo.metaDescription}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  seo: {
+                    ...prev.seo,
+                    metaDescription: e.target.value
+                  }
+                }))}
+                maxLength={160}
+                className="w-full px-4 py-2 bg-[#faf9f7] border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                {formData.seo.metaDescription.length}/160 caracteres (recomendado: 140-160)
+              </p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Palabras Clave SEO
+              </label>
+              <input
+                type="text"
+                placeholder="Se generarán automáticamente si se dejan vacías"
+                value={keywordInput}
+                onChange={(e) => setKeywordInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault()
+                    if (keywordInput.trim() && !formData.seo.keywords.includes(keywordInput.trim())) {
+                      setFormData(prev => ({
+                        ...prev,
+                        seo: {
+                          ...prev.seo,
+                          keywords: [...prev.seo.keywords, keywordInput.trim()]
+                        }
+                      }))
+                      setKeywordInput('')
+                    }
+                  }
+                }}
+                className="w-full px-4 py-2 bg-[#faf9f7] border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Palabras clave para SEO. Presiona Enter o coma para añadir.
+              </p>
+              {formData.seo.keywords.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {formData.seo.keywords.map((keyword, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                    >
+                      {keyword}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            seo: {
+                              ...prev.seo,
+                              keywords: prev.seo.keywords.filter((_, i) => i !== index)
+                            }
+                          }))
+                        }}
+                        className="ml-1 text-blue-400 hover:text-blue-600"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
