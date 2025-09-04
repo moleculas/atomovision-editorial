@@ -210,6 +210,27 @@ export async function PUT(
       )
       .populate('genre', 'name code color icon')
     
+    // Revalidar las páginas del libro para evitar caché
+    try {
+      const revalidateUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/revalidate`
+      // Revalidar con el slug anterior si cambió
+      if (existingBook.slug !== updatedBook.slug) {
+        await fetch(revalidateUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: `/libro/${existingBook.slug}` })
+        })
+      }
+      // Revalidar con el slug actual
+      await fetch(revalidateUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: `/libro/${updatedBook.slug}` })
+      })
+    } catch (error) {
+      console.error('Error revalidando caché:', error)
+    }
+    
     return NextResponse.json({
       success: true,
       data: updatedBook

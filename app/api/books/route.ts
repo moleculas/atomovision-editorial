@@ -191,6 +191,18 @@ export async function POST(request: NextRequest) {
     // Poblar el género antes de devolver
     await book.populate('genre', 'name code color')
     
+    // Revalidar la página del libro para evitar caché
+    try {
+      const revalidateUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/revalidate`
+      await fetch(revalidateUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: `/libro/${book.slug}` })
+      })
+    } catch (error) {
+      console.error('Error revalidando caché:', error)
+    }
+    
     return NextResponse.json({
       success: true,
       data: book

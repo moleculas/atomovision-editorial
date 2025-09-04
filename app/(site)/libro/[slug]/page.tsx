@@ -4,6 +4,11 @@ import { getBookBySlug } from '@/lib/cms'
 import { generateBookMetadata, generateBookSchema } from '@/lib/seo'
 import { BookDetail } from '@/components/ui/BookDetail'
 
+// Forzar renderizado dinámico para evitar problemas de caché
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
+
 interface Props {
   params: {
     slug: string

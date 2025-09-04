@@ -1,24 +1,28 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { Book } from '@/types'
 import { useCartStore } from '@/lib/store'
-import { Star, ShoppingCart, Download, BookOpen, ChevronLeft } from 'lucide-react'
+import { Star, ShoppingCart } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { bookService } from '@/lib/services/book.service'
+import { useParams } from 'next/navigation'
+import { getBookBySlug } from '@/lib/cms'
 
 interface BookDetailProps {
   book: Book
 }
 
-export function BookDetail({ book }: BookDetailProps) {
+export function BookDetail({ book: initialBook }: BookDetailProps) {
+  const params = useParams()
+  const [book, setBook] = useState<Book | null>(initialBook)
+  const [isLoadingFallback, setIsLoadingFallback] = useState(false)
   const [selectedFormat, setSelectedFormat] = useState<'ebook' | 'paperback'>('ebook')
   const [userRating, setUserRating] = useState<number | null>(null)
   const [hasRated, setHasRated] = useState(false)
-  const [currentRating, setCurrentRating] = useState(book.rating || 0)
-  const [totalRatings, setTotalRatings] = useState(book.totalRatings || 0)
+  const [currentRating, setCurrentRating] = useState(initialBook?.rating || 0)
+  const [totalRatings, setTotalRatings] = useState(initialBook?.totalRatings || 0)
   const [isRating, setIsRating] = useState(false)
   const { addItem, hasItem } = useCartStore((state) => ({
     addItem: state.addItem,
@@ -26,11 +30,41 @@ export function BookDetail({ book }: BookDetailProps) {
   }))
   
   // Verificar si el libro ya está en el carrito
-  const isInCart = hasItem(book.id, selectedFormat)
+  const isInCart = book ? hasItem(book.id, selectedFormat) : false
 
+  // Fallback: Si no hay libro, intentar cargarlo desde el cliente
+  useEffect(() => {
+    async function loadBookFallback() {
+      if (!book && params.slug && typeof params.slug === 'string') {
+        console.log('Libro no recibido del servidor, intentando cargar desde cliente...')
+        setIsLoadingFallback(true)
+        
+        try {
+          const bookData = await getBookBySlug(params.slug)
+          if (bookData) {
+            console.log('Libro cargado exitosamente desde el cliente')
+            setBook(bookData)
+            setCurrentRating(bookData.rating || 0)
+            setTotalRatings(bookData.totalRatings || 0)
+          } else {
+            console.error('Libro no encontrado en fallback')
+          }
+        } catch (error) {
+          console.error('Error en fallback de carga de libro:', error)
+        } finally {
+          setIsLoadingFallback(false)
+        }
+      }
+    }
+    
+    loadBookFallback()
+  }, [book, params.slug])
+  
   // Verificar si el usuario ya ha votado
   useEffect(() => {
     async function checkRating() {
+      if (!book) return // Verificar que book existe
+      
       try {
         const result = await bookService.checkUserRating(book.id)
         if (result.hasRated && result.userRating) {
@@ -42,8 +76,35 @@ export function BookDetail({ book }: BookDetailProps) {
       }
     }
     checkRating()
-  }, [book.id])
-
+  }, [book?.id]) // Cambiar dependencia a book?.id
+  
+  // Si está cargando el fallback, mostrar loading
+  if (isLoadingFallback) {
+    return (
+      <div className="min-h-screen pt-20 pb-16 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Cargando libro...</p>
+        </div>
+      </div>
+    )
+  }
+  
+  // Si no hay libro después del fallback, mostrar error
+  if (!book) {
+    return (
+      <div className="min-h-screen pt-20 pb-16 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Libro no encontrado</h1>
+          <p className="text-muted-foreground mb-6">Lo sentimos, no pudimos cargar este libro.</p>
+          <Link href="/catalog" className="btn btn-primary">
+            Volver al catálogo
+          </Link>
+        </div>
+      </div>
+    )
+  }
+  
   const handleRating = async (rating: number) => {
     if (hasRated || isRating) return
     
