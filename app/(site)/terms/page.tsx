@@ -195,13 +195,13 @@ export default function TermsPage() {
           {/* Uso del sitio web */}
           <div>
             <h2 className="text-2xl md:text-3xl font-bold mb-4">8. Uso del Sitio Web</h2>
-            <p className="text-lg leading-relaxed mb-4">
+            {/* <p className="text-lg leading-relaxed mb-4">
               <strong>8.1 Experiencia 3D:</strong> AtomoVisión ofrece una experiencia de navegación 3D única. Esta 
               funcionalidad requiere un navegador moderno con soporte WebGL. Proporcionamos una alternativa 2D para 
               dispositivos no compatibles.
-            </p>            
+            </p>             */}
             <p className="text-lg leading-relaxed mb-4">
-              <strong>8.2 Uso aceptable:</strong> Los usuarios se comprometen a utilizar el sitio web de manera legal 
+              <strong>8.1 Uso aceptable:</strong> Los usuarios se comprometen a utilizar el sitio web de manera legal 
               y respetuosa, sin intentar:
             </p>
             <ul className="space-y-2 mb-6 ml-6">
