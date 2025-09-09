@@ -36,9 +36,22 @@ export async function GET(
       slug: params.slug, 
       status: 'published' 
     })
-      .populate('genre')
       .lean()
       .maxTimeMS(20000) // Timeout de 20 segundos para la consulta
+    
+    // Si el libro existe y tiene genre, lo buscamos manualmente para evitar errores de populate
+    if (book && (book as any).genre) {
+      const Genre = (await import('@/lib/mongodb/models/Genre')).default
+      try {
+        const genre = await Genre.findById((book as any).genre).lean()
+        if (genre) {
+          (book as any).genre = genre
+        }
+      } catch (error) {
+        console.error('Error al buscar género:', error)
+        // Si falla la búsqueda del género, continuamos con el ID
+      }
+    }
     
     if (!book) {
       // Log para debugging
