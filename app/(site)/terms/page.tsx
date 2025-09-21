@@ -201,9 +201,7 @@ export default function TermsPage() {
               dispositivos no compatibles.
             </p>             */}
             <p className="text-lg leading-relaxed mb-4">
-              <strong>8.1 Uso aceptable:</strong> Los usuarios se comprometen a utilizar el sitio web de manera legal 
-              y respetuosa, sin intentar:
-            </p>
+              <strong>8.1 Uso aceptable:</strong> Los usuarios se comprometen a utilizar el sitio web de manera legal y respetuosa, sin intentar:</p>
             <ul className="space-y-2 mb-6 ml-6">
               <li className="flex items-start">
                 <span className="text-primary mr-2">•</span>
