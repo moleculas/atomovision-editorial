@@ -40,7 +40,7 @@ function apiBookToType(book: any): Book {
     currency: book.currency,
     formats: {
       ebook: book.formats?.ebook ? {
-        fileUrl: book.epubFile || '',
+        fileUrl: '', // Vacío - no exponemos URLs de archivos
         drm: false,
         pages: book.pages || 0,
       } : undefined,

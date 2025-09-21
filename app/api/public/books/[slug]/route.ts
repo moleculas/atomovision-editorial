@@ -122,8 +122,7 @@ export async function GET(
       featured: bookData.featured || false,
       rating: bookData.stats?.rating || undefined,
       totalRatings: bookData.stats?.totalRatings || 0,
-      epubFile: buildFileUrl(bookData.formats?.epub?.fileUrl, 'epubs'),
-      pdfFile: buildFileUrl(bookData.formats?.pdf?.fileUrl, 'epubs'),
+      // ELIMINADO: epubFile y pdfFile - No exponer URLs de archivos
       preview: bookData.excerpt,
       fullDescription: bookData.fullDescription,
       aiTextModel: bookData.aiGeneration?.textModel,

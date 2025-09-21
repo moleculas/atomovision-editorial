@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
       featured: book.featured || false,
       rating: book.stats?.rating || undefined,
       totalRatings: book.stats?.totalRatings || 0,
-      epubFile: buildFileUrl(book.formats?.epub?.fileUrl, 'epubs'),
+      // ELIMINADO: epubFile - No exponer URLs de archivos
       preview: book.excerpt,
     }))
     // Calcular páginas totales

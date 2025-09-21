@@ -25,7 +25,7 @@ export interface Book {
   currency: string // ISO 4217
   formats: {
     ebook?: {
-      fileUrl: string
+      fileUrl?: string  // Ahora es opcional para no exponerlo en APIs públicas
       drm?: boolean
       pages: number
     }
